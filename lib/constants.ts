@@ -1,15 +1,15 @@
 export const SITE = {
   name: "RUMO",
-  title: "RUMO — Acompanhe o lançamento",
+  title: "RUMO — Garanta seu acesso antecipado",
   description:
-    "Um novo app de mobilidade está em desenvolvimento. Entre na lista de interessados para acompanhar novidades, atualizações e informações sobre o lançamento da RUMO.",
+    "A RUMO está prestes a mudar a forma como você se move pela cidade. Entre na lista de fundadores e seja um dos primeiros a saber quando as vagas abrirem.",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
   locale: "pt_BR",
 } as const
 
 export const NAV_LINKS = [
-  { href: "#vantagens", label: "Vantagens" },
   { href: "#produto", label: "Produto" },
+  { href: "#vantagens", label: "Vantagens" },
   { href: "#para-voce", label: "Para você" },
   { href: "#como-funciona", label: "Como funciona" },
   { href: "#faq", label: "Dúvidas" },

@@ -1,3 +1,5 @@
+import { Plus } from "lucide-react"
+
 import { Section } from "@/components/shared/section"
 import { SectionHeading } from "@/components/shared/section-heading"
 import { Reveal } from "@/components/shared/reveal"
@@ -56,10 +58,14 @@ export function FaqSection() {
         <Accordion type="single" collapsible>
           {FAQS.map((faq, index) => (
             <AccordionItem key={faq.question} value={`item-${index}`}>
-              <AccordionTrigger className="text-left text-[1.02rem] font-semibold tracking-[-0.015em]">
+              <AccordionTrigger className="text-left text-[1.02rem] font-semibold tracking-[-0.015em] hover:no-underline **:data-[slot=accordion-trigger-icon]:hidden">
                 {faq.question}
+                <Plus
+                  aria-hidden="true"
+                  className="ml-auto size-4.5 shrink-0 text-primary transition-transform duration-300 group-aria-expanded/accordion-trigger:rotate-45"
+                />
               </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground max-w-[620px] text-[0.95rem] leading-[1.7]">
+              <AccordionContent className="max-w-[620px] text-[0.95rem] leading-[1.7] text-muted-foreground">
                 {faq.answer}
               </AccordionContent>
             </AccordionItem>

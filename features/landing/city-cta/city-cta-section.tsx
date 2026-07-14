@@ -20,7 +20,7 @@ const SIGNAL_BAR_HEIGHTS = ["38%", "54%", "44%", "80%", "62%", "92%"]
 
 export function CityCtaSection() {
   return (
-    <Section dark className="relative overflow-hidden text-center">
+    <Section tone="dark" className="relative overflow-hidden text-center">
       <div
         className="pointer-events-none absolute top-[-40%] left-1/2 h-[500px] w-[900px] -translate-x-1/2 rounded-full blur-[50px]"
         style={{
@@ -29,7 +29,7 @@ export function CityCtaSection() {
       />
 
       <Reveal>
-        <Kicker className="mx-auto w-fit">Expansão guiada por você</Kicker>
+        <Kicker className="mx-auto w-fit">A expansão é guiada por votos</Kicker>
       </Reveal>
       <Reveal delay={1}>
         <h2 className="relative mx-auto mb-4.5 max-w-[680px] text-[clamp(1.8rem,3.6vw,2.6rem)] font-extrabold tracking-[-0.03em]">
@@ -37,9 +37,9 @@ export function CityCtaSection() {
         </h2>
       </Reveal>
       <Reveal delay={2}>
-        <p className="text-muted-foreground relative mx-auto mb-10 max-w-[540px] text-[clamp(1.02rem,1.5vw,1.18rem)] leading-[1.65]">
-          A demanda por região ajuda a orientar o planejamento da plataforma. Cada
-          cadastro contribui para entendermos onde existe mais interesse pela RUMO.
+        <p className="relative mx-auto mb-10 max-w-[540px] text-[clamp(1.02rem,1.5vw,1.18rem)] leading-[1.65] text-muted-foreground">
+          Cada cadastro conta como um voto de demanda. Quanto mais gente da sua região
+          entra na lista, mais cedo a RUMO chega até você.
         </p>
       </Reveal>
 
@@ -79,18 +79,18 @@ export function CityCtaSection() {
             </div>
           </div>
           <div className="rounded-[20px] border border-white/14 bg-white/[0.035] p-4.5 text-left backdrop-blur-md">
-            <b className="text-foreground text-[0.9rem]">Base em construção</b>
-            <span className="text-muted-foreground mt-1 block text-[0.78rem]">
-              Os cadastros ajudam a formar uma visão mais precisa do público interessado
-              antes do lançamento.
+            <b className="text-[0.9rem] text-foreground">Fila de fundadores</b>
+            <span className="mt-1 block text-[0.78rem] text-muted-foreground">
+              A cada cadastro, uma nova posição é reservada — por ordem de chegada,
+              cidade por cidade.
             </span>
           </div>
         </div>
       </Reveal>
 
       <Reveal delay={3}>
-        <Button asChild size="lg" className="relative">
-          <a href={`#${WAITLIST_SECTION_ID}`}>Registrar meu interesse →</a>
+        <Button asChild size="lg" className="btn-shine relative">
+          <a href={`#${WAITLIST_SECTION_ID}`}>Garantir meu lugar na fila →</a>
         </Button>
       </Reveal>
     </Section>

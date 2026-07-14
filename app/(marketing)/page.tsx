@@ -17,8 +17,8 @@ export default function HomePage() {
       <TrustStrip />
       <ProductSection />
       <BenefitsSection />
-      <ComparisonSection />
       <PersonasSection />
+      <ComparisonSection />
       <HowItWorksSection />
       <CityCtaSection />
       <TestimonialsSection />

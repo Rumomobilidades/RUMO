@@ -195,6 +195,43 @@
     background: linear-gradient(180deg, transparent 62%, rgba(190, 232, 62, 0.28) 62%);
   }
 
+  /* Sweep de luz diagonal em CTAs de alta intenção — via pseudo-elemento para
+     funcionar mesmo com Button asChild (Radix Slot exige um único filho). */
+  .btn-shine {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .btn-shine::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    background: linear-gradient(110deg, transparent 20%, rgba(255, 255, 255, 0.35), transparent 52%);
+    transform: translateX(-120%);
+    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+    pointer-events: none;
+    z-index: 1;
+  }
+  .btn-shine:hover::before {
+    transform: translateX(120%);
+  }
+
+  /* Spotlight que segue o cursor sobre a grade do hero. */
+  .grid-spotlight {
+    background-image:
+      radial-gradient(
+        420px circle at var(--spot-x, 50%) var(--spot-y, 20%),
+        rgba(190, 232, 62, 0.12),
+        transparent 70%
+      ),
+      linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+    background-size:
+      100% 100%,
+      48px 48px,
+      48px 48px;
+  }
+
   .animate-floaty {
     animation: floaty 6s ease-in-out infinite;
   }

@@ -31,9 +31,11 @@ export function QuickEmailForm() {
       />
       <button
         type="submit"
-        className="bg-rumo-lime text-rumo-ink hover:bg-rumo-lime-soft inline-flex flex-none items-center justify-center gap-2 rounded-full px-6 py-3 text-[0.9rem] font-semibold transition-colors max-[480px]:w-full"
+        className="btn-shine inline-flex flex-none items-center justify-center gap-2 rounded-full bg-rumo-lime px-6 py-3 text-[0.9rem] font-semibold text-rumo-ink transition-colors hover:bg-rumo-lime-soft max-[480px]:w-full"
       >
-        Cadastrar interesse <ArrowRight className="size-4" />
+        <span className="relative z-2 inline-flex items-center gap-2">
+          Quero ser avisado <ArrowRight className="size-4" />
+        </span>
       </button>
     </form>
   )

@@ -49,7 +49,7 @@ export function Navbar() {
             <a
               key={link.href}
               href={link.href}
-              className="transition-opacity hover:opacity-100"
+              className="relative py-1 transition-opacity after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-0 after:bg-current after:transition-[width] after:duration-300 hover:opacity-100 hover:after:w-full"
             >
               {link.label}
             </a>
@@ -59,10 +59,11 @@ export function Navbar() {
         <Button
           asChild
           className={cn(
+            "btn-shine",
             !scrolled && "bg-rumo-lime text-rumo-ink hover:bg-rumo-lime-soft"
           )}
         >
-          <a href={`#${WAITLIST_SECTION_ID}`}>Cadastrar interesse</a>
+          <a href={`#${WAITLIST_SECTION_ID}`}>Quero ser avisado</a>
         </Button>
       </div>
     </nav>
