@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react"
 import { Controller } from "react-hook-form"
 
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import {
   Form,
@@ -159,6 +160,29 @@ export function WaitlistForm() {
                   )}
                 />
               </div>
+
+              <FormField
+                control={form.control}
+                name="lgpd_consent"
+                render={({ field }) => (
+                  <FormItem className="mb-5.5 flex flex-row items-start gap-2.5">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        aria-invalid={!!form.formState.errors.lgpd_consent}
+                      />
+                    </FormControl>
+                    <div className="grid gap-1 leading-none">
+                      <FormLabel className="text-[0.82rem] leading-[1.45] font-normal text-muted-foreground">
+                        Autorizo o armazenamento dos meus dados para receber
+                        novidades sobre a plataforma.
+                      </FormLabel>
+                      <FormMessage />
+                    </div>
+                  </FormItem>
+                )}
+              />
 
               {form.formState.errors.root ? (
                 <p className="mb-4 text-sm text-destructive">

@@ -25,3 +25,15 @@ export function readTrackingParamsFromLocation(): TrackingParams {
 
   return result
 }
+
+export type PageContext = { landing?: string; referrer?: string }
+
+/** Lê a página atual e a origem do visitante. Só roda no client. */
+export function readPageContext(): PageContext {
+  if (typeof window === "undefined") return {}
+
+  return {
+    landing: window.location.pathname,
+    referrer: document.referrer || undefined,
+  }
+}

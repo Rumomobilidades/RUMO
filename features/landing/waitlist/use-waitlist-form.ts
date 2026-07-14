@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation } from "@tanstack/react-query"
 
-import { readTrackingParamsFromLocation } from "@/lib/utm"
+import { readPageContext, readTrackingParamsFromLocation } from "@/lib/utm"
 import { WAITLIST_EMAIL_STORAGE_KEY } from "@/lib/constants"
 import { trackLeadEvent } from "@/services/analytics"
 import {
@@ -36,6 +36,7 @@ export function useWaitlistForm() {
       city: "",
       state: "",
       website: "",
+      lgpd_consent: false,
     },
   })
 
@@ -50,7 +51,8 @@ export function useWaitlistForm() {
 
   const onSubmit = form.handleSubmit(async (values) => {
     const tracking = readTrackingParamsFromLocation()
-    const result = await mutation.mutateAsync({ ...values, ...tracking })
+    const pageContext = readPageContext()
+    const result = await mutation.mutateAsync({ ...values, ...tracking, ...pageContext })
 
     if (!result.success) {
       form.setError(result.error.code === "duplicate_email" ? "email" : "root", {

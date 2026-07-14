@@ -23,6 +23,11 @@ export const waitlistSchema = z.object({
   city: z.string().trim().max(80).optional().or(z.literal("")),
   state: z.string().trim().max(2).optional().or(z.literal("")),
   profile: z.enum(WAITLIST_PROFILES).optional(),
+  lgpd_consent: z.boolean().refine((value) => value === true, {
+    message: "É necessário autorizar o uso dos seus dados para continuar.",
+  }),
+  landing: z.string().trim().max(300).optional(),
+  referrer: z.string().trim().max(500).optional(),
   utm_source: z.string().trim().max(200).optional(),
   utm_medium: z.string().trim().max(200).optional(),
   utm_campaign: z.string().trim().max(200).optional(),
@@ -30,8 +35,12 @@ export const waitlistSchema = z.object({
   utm_term: z.string().trim().max(200).optional(),
   fbclid: z.string().trim().max(300).optional(),
   gclid: z.string().trim().max(300).optional(),
-  // honeypot: campo invisível para humanos; se vier preenchido, é bot.
-  website: z.string().max(0, "Falha na validação.").optional().or(z.literal("")),
+  // honeypot: campo invisível para humanos. Sem limite de tamanho aqui de
+  // propósito — se houvesse `.max(0)`, um bot preenchendo o campo faria a
+  // validação falhar com 400 antes de chegar na Route Handler, que é quem
+  // precisa ver o valor preenchido para responder com sucesso falso (ver
+  // app/api/waitlist/route.ts).
+  website: z.string().optional().or(z.literal("")),
 })
 
 export type WaitlistFormValues = z.infer<typeof waitlistSchema>
