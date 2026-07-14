@@ -1,0 +1,3263 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RUMO — Acompanhe o lançamento</title>
+    <meta
+      name="description"
+      content="Um novo app de mobilidade está em desenvolvimento. Entre na lista de interessados para acompanhar novidades, atualizações e informações sobre o lançamento da RUMO."
+    />
+    <meta property="og:title" content="RUMO — Acompanhe o lançamento" />
+    <meta
+      property="og:description"
+      content="Cadastre seu interesse para receber novidades e atualizações sobre a plataforma."
+    />
+    <meta property="og:type" content="website" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ============================================================
+   RUMO v3 — ritmo claro/escuro
+   60% branco · 25% grafite · 15% verde (destaques)
+   ============================================================ */
+      :root {
+        /* light tokens */
+        --bg: #ffffff;
+        --bg-soft: #f7f8f7;
+        --line: #e8eae8;
+        --line-strong: #dde1dd;
+        --text: #101613;
+        --muted: #5b6660;
+        --dim: #8a948e;
+        --green: #0e8a45;
+        --green-dark: #0a6e37;
+        --green-bright: #16a35a;
+        --green-tint: #e7f5ec;
+        --ink: #07100b;
+        /* dark tokens */
+        --d-bg: #0c100e;
+        --d-surface: #131816;
+        --d-card: #161c19;
+        --d-line: rgba(255, 255, 255, 0.08);
+        --d-line-strong: rgba(255, 255, 255, 0.14);
+        --d-text: #f2f5f2;
+        --d-muted: #9aa69e;
+        --d-dim: #6b776f;
+        --lime: #bee83e;
+        --lime-soft: #d6f776;
+        --lime-tint: rgba(190, 232, 62, 0.1);
+
+        --radius: 18px;
+        --radius-sm: 12px;
+        --shadow-sm: 0 1px 2px rgba(16, 22, 19, 0.05), 0 1px 3px rgba(16, 22, 19, 0.04);
+        --shadow-md:
+          0 2px 4px rgba(16, 22, 19, 0.04), 0 12px 32px -12px rgba(16, 22, 19, 0.1);
+        --shadow-lg:
+          0 4px 8px rgba(16, 22, 19, 0.04), 0 28px 64px -24px rgba(16, 22, 19, 0.16);
+        --font: "Inter", system-ui, -apple-system, sans-serif;
+        --w: 1120px;
+        --pad: clamp(20px, 5vw, 44px);
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.001s !important;
+          transition-duration: 0.001s !important;
+        }
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font);
+        font-size: 16px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+        overflow-x: hidden;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background:
+          radial-gradient(circle at 9% 18%, rgba(14, 138, 69, 0.07), transparent 28%),
+          radial-gradient(circle at 88% 4%, rgba(190, 232, 62, 0.08), transparent 30%),
+          linear-gradient(180deg, rgba(247, 248, 247, 0.65), transparent 420px);
+      }
+      ::selection {
+        background: var(--green);
+        color: #fff;
+      }
+      img {
+        max-width: 100%;
+        display: block;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      button {
+        font-family: inherit;
+        cursor: pointer;
+      }
+      .wrap {
+        max-width: var(--w);
+        margin: 0 auto;
+        padding: 0 var(--pad);
+      }
+      .wrap > * {
+        min-width: 0;
+      }
+
+      /* ---------- typography ---------- */
+      h1,
+      h2,
+      h3,
+      h4 {
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 1.1;
+      }
+      .h-display {
+        font-size: clamp(2.5rem, 5.8vw, 4.2rem);
+        letter-spacing: -0.035em;
+        font-weight: 800;
+      }
+      .h-section {
+        font-size: clamp(1.8rem, 3.6vw, 2.6rem);
+        font-weight: 800;
+      }
+      .lead {
+        font-size: clamp(1.02rem, 1.5vw, 1.18rem);
+        line-height: 1.65;
+        letter-spacing: -0.01em;
+        color: var(--muted);
+      }
+      .kicker {
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--green);
+        margin-bottom: 14px;
+      }
+      .hl {
+        background: linear-gradient(
+          180deg,
+          transparent 62%,
+          rgba(190, 232, 62, 0.55) 62%
+        );
+        padding: 0 2px;
+      }
+
+      /* ---------- dark section theme ---------- */
+      .sec-dark {
+        background: var(--d-bg);
+        color: var(--d-text);
+      }
+      .sec-dark .lead {
+        color: var(--d-muted);
+      }
+      .sec-dark .kicker {
+        color: var(--lime);
+      }
+      .sec-dark .hl {
+        background: linear-gradient(
+          180deg,
+          transparent 62%,
+          rgba(190, 232, 62, 0.28) 62%
+        );
+      }
+      .sec-dark ::selection {
+        background: var(--lime);
+        color: #0c100e;
+      }
+
+      /* ---------- buttons ---------- */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        letter-spacing: -0.01em;
+        padding: 15px 28px;
+        border-radius: 999px;
+        border: 1px solid transparent;
+        transition:
+          transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+          box-shadow 0.2s,
+          background 0.2s,
+          border-color 0.2s;
+        white-space: nowrap;
+        position: relative;
+        overflow: hidden;
+      }
+      .btn::before {
+        content: "";
+        position: absolute;
+        inset: -1px;
+        background: linear-gradient(
+          110deg,
+          transparent 20%,
+          rgba(255, 255, 255, 0.34),
+          transparent 52%
+        );
+        transform: translateX(-120%);
+        transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .btn:hover::before {
+        transform: translateX(120%);
+      }
+      .btn > * {
+        position: relative;
+        z-index: 1;
+      }
+      .btn .arrow {
+        transition: transform 0.2s;
+      }
+      .btn:hover .arrow {
+        transform: translateX(3px);
+      }
+      /* primary on light */
+      .btn-primary {
+        background: var(--green);
+        color: #fff;
+        box-shadow:
+          0 1px 2px rgba(14, 110, 55, 0.3),
+          0 8px 24px -8px rgba(14, 138, 69, 0.45);
+      }
+      .btn-primary:hover {
+        background: var(--green-dark);
+        transform: translateY(-1px);
+      }
+      /* primary on dark = lime */
+      .sec-dark .btn-primary {
+        background: linear-gradient(115deg, var(--lime), var(--lime-soft));
+        color: #0c100e;
+        box-shadow:
+          0 1px 2px rgba(190, 232, 62, 0.25),
+          0 10px 28px -8px rgba(190, 232, 62, 0.35);
+      }
+      .sec-dark .btn-primary:hover {
+        background: var(--lime);
+        transform: translateY(-1px);
+        box-shadow:
+          0 2px 4px rgba(190, 232, 62, 0.3),
+          0 14px 36px -8px rgba(190, 232, 62, 0.45);
+      }
+      .btn-ghost {
+        background: #fff;
+        border-color: var(--line-strong);
+        color: var(--text);
+        box-shadow: var(--shadow-sm);
+      }
+      .btn-ghost:hover {
+        border-color: var(--dim);
+        transform: translateY(-1px);
+      }
+      .sec-dark .btn-ghost {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: var(--d-line-strong);
+        color: var(--d-text);
+        box-shadow: none;
+      }
+      .sec-dark .btn-ghost:hover {
+        border-color: rgba(190, 232, 62, 0.45);
+        background: rgba(190, 232, 62, 0.06);
+      }
+
+      /* ---------- navbar (adaptativa) ---------- */
+      .nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 60;
+        transition:
+          background 0.35s,
+          border-color 0.35s,
+          color 0.35s,
+          box-shadow 0.35s;
+        border-bottom: 1px solid transparent;
+        color: var(--d-text);
+      }
+      .nav.light {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(14px);
+        border-bottom-color: var(--line);
+        color: var(--text);
+        box-shadow: 0 1px 12px rgba(16, 22, 19, 0.04);
+      }
+      .nav-inner {
+        max-width: var(--w);
+        margin: 0 auto;
+        padding: 0 var(--pad);
+        height: 68px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+      }
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 800;
+        font-size: 1.22rem;
+        letter-spacing: -0.03em;
+      }
+      .logo-mark {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        flex: none;
+        background: var(--green);
+        color: #fff;
+        display: grid;
+        place-items: center;
+        font-size: 1.05rem;
+        font-weight: 800;
+        transition:
+          background 0.35s,
+          color 0.35s;
+      }
+      .nav:not(.light) .logo-mark {
+        background: var(--lime);
+        color: #0c100e;
+      }
+      .nav-links {
+        display: flex;
+        gap: 28px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        opacity: 0.85;
+      }
+      .nav-links a {
+        transition: opacity 0.2s;
+      }
+      .nav-links a:hover {
+        opacity: 1;
+      }
+      .nav .btn {
+        padding: 10px 21px;
+        font-size: 0.86rem;
+      }
+      .nav:not(.light) .btn-primary {
+        background: var(--lime);
+        color: #0c100e;
+        box-shadow: 0 6px 20px -6px rgba(190, 232, 62, 0.4);
+      }
+      .nav:not(.light) .btn-primary:hover {
+        background: var(--lime-soft);
+      }
+      @media (max-width: 860px) {
+        .nav-links {
+          display: none;
+        }
+      }
+      @media (max-width: 520px) {
+        .nav-inner {
+          gap: 12px;
+        }
+        .nav .btn {
+          padding: 10px 14px;
+          font-size: 0.78rem;
+          max-width: 168px;
+        }
+        .logo {
+          font-size: 1.08rem;
+        }
+        .logo-mark {
+          width: 34px;
+          height: 34px;
+        }
+      }
+
+      /* ---------- HERO (dark) ---------- */
+      .hero {
+        padding: 158px 0 96px;
+        position: relative;
+        overflow: hidden;
+      }
+      .hero .orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(110px);
+        pointer-events: none;
+      }
+      .orb-1 {
+        width: 620px;
+        height: 620px;
+        background: radial-gradient(circle, rgba(190, 232, 62, 0.14), transparent 65%);
+        top: -200px;
+        right: -140px;
+      }
+      .orb-2 {
+        width: 480px;
+        height: 480px;
+        background: radial-gradient(circle, rgba(14, 138, 69, 0.16), transparent 65%);
+        bottom: -240px;
+        left: -140px;
+      }
+      .hero-grid-bg {
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        background-size: 54px 54px;
+        mask-image: radial-gradient(
+          ellipse 85% 65% at 50% 12%,
+          #000 30%,
+          transparent 75%
+        );
+      }
+      .hero-inner {
+        position: relative;
+        display: grid;
+        grid-template-columns: 1.08fr 0.92fr;
+        gap: 64px;
+        align-items: center;
+      }
+      .hero-inner > * {
+        min-width: 0;
+      }
+      @media (max-width: 960px) {
+        .hero-inner {
+          grid-template-columns: 1fr;
+          gap: 56px;
+        }
+        .hero {
+          padding-top: 122px;
+        }
+      }
+      @media (max-width: 520px) {
+        .h-display {
+          font-size: clamp(2.18rem, 10vw, 2.5rem);
+        }
+        .hero {
+          padding-top: 116px;
+        }
+        .hero h1 {
+          overflow-wrap: break-word;
+        }
+      }
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--lime-soft);
+        background: var(--lime-tint);
+        border: 1px solid rgba(190, 232, 62, 0.22);
+        border-radius: 999px;
+        padding: 7px 15px;
+        margin-bottom: 24px;
+      }
+      .hero-copy {
+        position: relative;
+        z-index: 3;
+      }
+      .hero-kpis {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        max-width: 520px;
+        margin: 28px 0 0;
+      }
+      .hero-kpi {
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 13px 14px;
+        background: rgba(255, 255, 255, 0.045);
+        backdrop-filter: blur(12px);
+      }
+      .hero-kpi strong {
+        display: block;
+        color: var(--d-text);
+        font-size: 1.1rem;
+        letter-spacing: -0.03em;
+      }
+      .hero-kpi span {
+        display: block;
+        color: var(--d-muted);
+        font-size: 0.72rem;
+        line-height: 1.35;
+        margin-top: 2px;
+      }
+      @media (max-width: 560px) {
+        .hero-kpis {
+          grid-template-columns: 1fr;
+        }
+        .hero-kpi {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+        }
+        .hero-kpi span {
+          text-align: right;
+        }
+      }
+      @media (max-width: 420px) {
+        .hero-kpi {
+          display: block;
+        }
+        .hero-kpi span {
+          text-align: left;
+        }
+      }
+      .eyebrow .pulse {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--lime);
+        animation: pulse 2.4s infinite;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(190, 232, 62, 0.4);
+        }
+        50% {
+          box-shadow: 0 0 0 6px rgba(190, 232, 62, 0);
+        }
+      }
+      .hero h1 {
+        margin-bottom: 22px;
+      }
+      .hero h1 .accent-lime {
+        background: linear-gradient(100deg, var(--lime) 20%, #57c878 95%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .hero .lead {
+        max-width: 500px;
+        margin-bottom: 32px;
+      }
+
+      .quick {
+        display: flex;
+        gap: 10px;
+        max-width: 480px;
+        margin-bottom: 16px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--d-line-strong);
+        border-radius: 999px;
+        padding: 6px;
+        backdrop-filter: blur(8px);
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+      }
+      .quick:focus-within {
+        border-color: var(--lime);
+        box-shadow: 0 0 0 4px rgba(190, 232, 62, 0.12);
+      }
+      .quick input {
+        flex: 1;
+        min-width: 0;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        padding: 10px 16px;
+        font-family: inherit;
+        font-size: 0.95rem;
+        color: var(--d-text);
+      }
+      .quick input::placeholder {
+        color: var(--d-dim);
+      }
+      .quick .btn {
+        padding: 12px 24px;
+        font-size: 0.9rem;
+        flex: none;
+      }
+      @media (max-width: 480px) {
+        .quick {
+          flex-direction: column;
+          border-radius: 20px;
+          padding: 8px;
+        }
+        .quick .btn {
+          width: 100%;
+        }
+      }
+      .hero-micro {
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+        font-size: 0.82rem;
+        color: var(--d-dim);
+        font-weight: 500;
+      }
+      .hero-micro span {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .hero-micro svg {
+        width: 14px;
+        height: 14px;
+        color: var(--lime);
+        flex: none;
+      }
+
+      /* phone mockup (dark shell, luminous screen) */
+      .mockup-zone {
+        position: relative;
+        display: flex;
+        justify-content: center;
+      }
+      .mock-glow {
+        position: absolute;
+        width: 76%;
+        height: 76%;
+        top: 12%;
+        left: 12%;
+        background: radial-gradient(circle, rgba(190, 232, 62, 0.16), transparent 68%);
+        filter: blur(60px);
+      }
+      .phone {
+        position: relative;
+        z-index: 2;
+        width: min(290px, 72vw);
+        background: #10140f;
+        border-radius: 42px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow:
+          0 0 0 9px #181d18,
+          0 0 0 10px rgba(255, 255, 255, 0.07),
+          0 46px 90px -28px rgba(0, 0, 0, 0.8);
+        padding: 12px;
+        transform: rotate(2.5deg);
+        transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .phone::before {
+        content: "";
+        position: absolute;
+        inset: -2px;
+        border-radius: 44px;
+        padding: 1px;
+        background: linear-gradient(
+          145deg,
+          rgba(190, 232, 62, 0.7),
+          transparent 38%,
+          rgba(255, 255, 255, 0.18)
+        );
+        -webkit-mask:
+          linear-gradient(#000 0 0) content-box,
+          linear-gradient(#000 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        pointer-events: none;
+      }
+      .mockup-zone:hover .phone {
+        transform: rotate(1deg) translateY(-5px);
+      }
+      .screen {
+        border-radius: 32px;
+        overflow: hidden;
+        background: #fbfcfb;
+        aspect-ratio: 9/18.4;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      }
+      .notch {
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 20px;
+        background: #101613;
+        border-radius: 11px;
+        z-index: 5;
+      }
+      .app-map {
+        flex: 1;
+        position: relative;
+        background:
+          radial-gradient(circle at 72% 22%, rgba(14, 138, 69, 0.06), transparent 45%),
+          linear-gradient(rgba(16, 22, 19, 0.045) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(16, 22, 19, 0.045) 1px, transparent 1px), #f3f6f3;
+        background-size:
+          auto,
+          32px 32px,
+          32px 32px,
+          auto;
+      }
+      .app-map svg.route {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+      .map-pin {
+        position: absolute;
+        width: 13px;
+        height: 13px;
+        border-radius: 50%;
+        background: var(--green);
+        border: 3px solid #fff;
+        box-shadow: 0 2px 8px rgba(14, 138, 69, 0.4);
+      }
+      .pin-a {
+        top: 22%;
+        left: 22%;
+      }
+      .pin-b {
+        top: 63%;
+        left: 70%;
+        background: #101613;
+      }
+      .app-sheet {
+        background: #fff;
+        border-top: 1px solid var(--line);
+        border-radius: 20px 20px 0 0;
+        padding: 15px 15px 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        color: var(--text);
+      }
+      .sheet-handle {
+        width: 34px;
+        height: 4px;
+        border-radius: 2px;
+        background: var(--line-strong);
+        margin: 0 auto 2px;
+      }
+      .ride-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .ride-ic {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        flex: none;
+        background: var(--green-tint);
+        display: grid;
+        place-items: center;
+      }
+      .ride-ic svg {
+        width: 17px;
+        height: 17px;
+        color: var(--green);
+      }
+      .ride-meta {
+        flex: 1;
+        min-width: 0;
+      }
+      .ride-meta b {
+        display: block;
+        font-size: 0.74rem;
+        letter-spacing: -0.01em;
+      }
+      .ride-meta span {
+        font-size: 0.64rem;
+        color: var(--dim);
+      }
+      .ride-price {
+        font-weight: 800;
+        font-size: 0.84rem;
+        letter-spacing: -0.02em;
+      }
+      .ride-price small {
+        display: block;
+        font-size: 0.56rem;
+        color: var(--green);
+        font-weight: 600;
+        text-align: right;
+      }
+      .sheet-btn {
+        background: var(--green);
+        color: #fff;
+        border: 0;
+        border-radius: 11px;
+        padding: 11px;
+        font-weight: 700;
+        font-size: 0.76rem;
+      }
+      .float-card {
+        position: absolute;
+        z-index: 3;
+        background: rgba(22, 28, 25, 0.85);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--d-line-strong);
+        border-radius: 14px;
+        padding: 11px 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 18px 40px -14px rgba(0, 0, 0, 0.6);
+        animation: floaty 6s ease-in-out infinite;
+      }
+      .float-card b {
+        font-size: 0.76rem;
+        display: block;
+        letter-spacing: -0.01em;
+        color: var(--d-text);
+      }
+      .float-card span {
+        font-size: 0.65rem;
+        color: var(--d-muted);
+      }
+      .float-card .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--lime);
+        box-shadow: 0 0 8px rgba(190, 232, 62, 0.6);
+        flex: none;
+      }
+      .fc-1 {
+        top: 10%;
+        left: -6%;
+      }
+      .fc-2 {
+        bottom: 15%;
+        right: -7%;
+        animation-delay: -3s;
+      }
+      @keyframes floaty {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-9px);
+        }
+      }
+      @media (max-width: 520px) {
+        .fc-1 {
+          left: 0;
+        }
+        .fc-2 {
+          right: 0;
+        }
+      }
+
+      /* ---------- trust marquee ---------- */
+      .trust-strip {
+        padding: 28px 0;
+        border-bottom: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.82);
+        overflow: hidden;
+      }
+      .trust-inner {
+        display: flex;
+        align-items: center;
+        gap: 28px;
+      }
+      .trust-label {
+        font-size: 0.76rem;
+        font-weight: 700;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        color: var(--dim);
+        white-space: nowrap;
+      }
+      .marquee {
+        flex: 1;
+        overflow: hidden;
+        mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+      }
+      .marquee-track {
+        display: flex;
+        gap: 12px;
+        width: max-content;
+        animation: marquee 24s linear infinite;
+      }
+      .trust-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: #fff;
+        padding: 9px 15px;
+        color: var(--muted);
+        font-size: 0.86rem;
+        font-weight: 600;
+        box-shadow: var(--shadow-sm);
+        white-space: nowrap;
+      }
+      .trust-pill::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--green);
+      }
+      @keyframes marquee {
+        to {
+          transform: translateX(-50%);
+        }
+      }
+      @media (max-width: 700px) {
+        .trust-inner {
+          display: block;
+        }
+        .trust-label {
+          margin-bottom: 14px;
+        }
+        .trust-strip {
+          padding: 22px 0;
+        }
+      }
+
+      /* ---------- section base ---------- */
+      .section {
+        padding: 96px 0;
+      }
+      .section-head {
+        max-width: 620px;
+        margin-bottom: 56px;
+      }
+      .section-head .lead {
+        margin-top: 16px;
+      }
+      .section-head.center {
+        margin-left: auto;
+        margin-right: auto;
+        text-align: center;
+      }
+
+      /* ---------- bento value ---------- */
+      .bento {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 18px;
+      }
+      .bento-col {
+        display: grid;
+        gap: 18px;
+      }
+      .bento-card {
+        position: relative;
+        overflow: hidden;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        padding: 30px;
+        box-shadow: var(--shadow-sm);
+        transition:
+          transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
+          box-shadow 0.25s,
+          border-color 0.25s;
+      }
+      .bento-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-md);
+        border-color: rgba(14, 138, 69, 0.18);
+      }
+      .bento-card.large {
+        min-height: 390px;
+        background: linear-gradient(145deg, #fff, #f5faf6);
+      }
+      .bento-card.dark {
+        background: linear-gradient(145deg, #101613, #17211b);
+        border-color: rgba(255, 255, 255, 0.09);
+        color: #fff;
+      }
+      .bento-card.dark p,
+      .bento-card.dark .metric-label {
+        color: var(--d-muted);
+      }
+      .bento-card h3 {
+        font-size: 1.28rem;
+        margin-bottom: 9px;
+        letter-spacing: -0.025em;
+      }
+      .bento-card p {
+        color: var(--muted);
+        font-size: 0.93rem;
+        max-width: 440px;
+      }
+      .metric-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-top: 28px;
+      }
+      .metric {
+        border: 1px solid rgba(14, 138, 69, 0.12);
+        border-radius: 16px;
+        padding: 16px;
+        background: rgba(255, 255, 255, 0.75);
+      }
+      .metric-value {
+        font-size: 1.55rem;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        color: var(--green);
+      }
+      .metric-label {
+        font-size: 0.75rem;
+        color: var(--muted);
+        line-height: 1.35;
+      }
+      .mini-dashboard {
+        position: absolute;
+        left: 30px;
+        right: 30px;
+        bottom: 28px;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.82);
+        backdrop-filter: blur(16px);
+        padding: 16px;
+        box-shadow: var(--shadow-md);
+      }
+      .dash-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .dash-row:last-child {
+        border-bottom: 0;
+      }
+      .dash-row b {
+        font-size: 0.82rem;
+      }
+      .dash-row span {
+        font-size: 0.78rem;
+        color: var(--muted);
+      }
+      .dash-chip {
+        color: var(--green);
+        font-weight: 800;
+        font-size: 0.82rem;
+      }
+      .queue-rail {
+        height: 10px;
+        border-radius: 99px;
+        background: rgba(255, 255, 255, 0.1);
+        margin-top: 24px;
+        overflow: hidden;
+      }
+      .queue-rail span {
+        display: block;
+        width: 72%;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--lime), #58d47c);
+        animation: rail 3.4s ease-in-out infinite;
+      }
+      .queue-list {
+        display: grid;
+        gap: 10px;
+        margin-top: 22px;
+      }
+      .queue-item {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 14px;
+        padding: 12px 14px;
+        background: rgba(255, 255, 255, 0.04);
+        font-size: 0.84rem;
+      }
+      .queue-item strong {
+        color: var(--lime);
+      }
+      @keyframes rail {
+        50% {
+          width: 86%;
+        }
+      }
+      @media (max-width: 920px) {
+        .bento {
+          grid-template-columns: 1fr;
+        }
+        .bento-card.large {
+          min-height: 430px;
+        }
+      }
+      @media (max-width: 560px) {
+        .metric-row {
+          grid-template-columns: 1fr;
+        }
+        .mini-dashboard {
+          position: static;
+          margin-top: 24px;
+        }
+        .bento-card.large {
+          min-height: auto;
+        }
+      }
+
+      /* ---------- GARANTIAS (light) ---------- */
+      .gain-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+      }
+      @media (max-width: 900px) {
+        .gain-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .gain {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 34px 30px;
+        box-shadow: var(--shadow-sm);
+        transition:
+          transform 0.25s,
+          box-shadow 0.25s;
+        position: relative;
+        overflow: hidden;
+      }
+      .gain::after {
+        content: "";
+        position: absolute;
+        inset: auto 22px 0;
+        height: 3px;
+        border-radius: 3px 3px 0 0;
+        background: linear-gradient(90deg, var(--green), var(--lime));
+        transform: scaleX(0.35);
+        transform-origin: left;
+        transition: transform 0.25s;
+      }
+      .gain:hover::after {
+        transform: scaleX(1);
+      }
+      .gain:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-md);
+      }
+      .gain .ic {
+        width: 46px;
+        height: 46px;
+        border-radius: 13px;
+        margin-bottom: 22px;
+        background: var(--green-tint);
+        display: grid;
+        place-items: center;
+      }
+      .gain .ic svg {
+        width: 21px;
+        height: 21px;
+        color: var(--green);
+      }
+      .gain h3 {
+        font-size: 1.15rem;
+        margin-bottom: 9px;
+        letter-spacing: -0.02em;
+      }
+      .gain p {
+        color: var(--muted);
+        font-size: 0.93rem;
+      }
+
+      /* ---------- PERFIS (dark) ---------- */
+      .profiles {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+      }
+      @media (max-width: 960px) {
+        .profiles {
+          grid-template-columns: 1fr;
+        }
+      }
+      .profile {
+        background: var(--d-card);
+        border: 1px solid var(--d-line);
+        border-radius: var(--radius);
+        padding: 36px 30px;
+        display: flex;
+        flex-direction: column;
+        transition:
+          transform 0.25s,
+          border-color 0.25s;
+        position: relative;
+        overflow: hidden;
+      }
+      .profile::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          circle at 25% 0,
+          rgba(190, 232, 62, 0.1),
+          transparent 32%
+        );
+        opacity: 0;
+        transition: opacity 0.25s;
+        pointer-events: none;
+      }
+      .profile:hover::before {
+        opacity: 1;
+      }
+      .profile:hover {
+        transform: translateY(-4px);
+        border-color: rgba(190, 232, 62, 0.3);
+      }
+      .profile .tag {
+        align-self: flex-start;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--lime);
+        background: var(--lime-tint);
+        border: 1px solid rgba(190, 232, 62, 0.2);
+        border-radius: 999px;
+        padding: 5px 13px;
+        margin-bottom: 20px;
+      }
+      .profile h3 {
+        font-size: 1.35rem;
+        margin-bottom: 10px;
+        letter-spacing: -0.025em;
+        line-height: 1.25;
+      }
+      .profile .sub {
+        color: var(--d-muted);
+        font-size: 0.93rem;
+        margin-bottom: 24px;
+      }
+      .profile ul {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 30px;
+        flex: 1;
+      }
+      .profile li {
+        display: flex;
+        gap: 10px;
+        font-size: 0.91rem;
+        color: var(--d-muted);
+        align-items: flex-start;
+      }
+      .profile li svg {
+        width: 16px;
+        height: 16px;
+        color: var(--lime);
+        flex: none;
+        margin-top: 4px;
+      }
+      .profile li b {
+        color: var(--d-text);
+        font-weight: 600;
+      }
+      .profile .btn {
+        width: 100%;
+      }
+      .profile.featured {
+        border-color: rgba(190, 232, 62, 0.35);
+        background: linear-gradient(180deg, rgba(190, 232, 62, 0.06), var(--d-card) 45%);
+      }
+
+      /* ---------- COMO FUNCIONA (light) ---------- */
+      .how-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+      }
+      @media (max-width: 860px) {
+        .how-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .how-step {
+        background: var(--bg-soft);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 34px 30px;
+      }
+      .how-step {
+        position: relative;
+        overflow: hidden;
+      }
+      .how-step::before {
+        content: "";
+        position: absolute;
+        left: 30px;
+        right: 30px;
+        top: 52px;
+        height: 1px;
+        background: linear-gradient(90deg, var(--line-strong), transparent);
+        z-index: 0;
+      }
+      .how-step > * {
+        position: relative;
+        z-index: 1;
+      }
+      .how-step .n {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        margin-bottom: 20px;
+        background: var(--text);
+        color: #fff;
+        font-weight: 700;
+        font-size: 0.9rem;
+        display: grid;
+        place-items: center;
+      }
+      .how-step:last-child .n {
+        background: var(--green);
+      }
+      .how-step h3 {
+        font-size: 1.1rem;
+        margin-bottom: 9px;
+        letter-spacing: -0.02em;
+      }
+      .how-step p {
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+      .how-cta {
+        text-align: center;
+        margin-top: 44px;
+      }
+
+      /* ---------- comparison ---------- */
+      .compare-sec {
+        background: var(--bg-soft);
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+      .compare-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+      }
+      .compare-card {
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        padding: 30px;
+        background: #fff;
+        box-shadow: var(--shadow-sm);
+      }
+      .compare-card.featured {
+        background: linear-gradient(145deg, #0c100e, #17251b);
+        color: #fff;
+        border-color: rgba(190, 232, 62, 0.28);
+        box-shadow: 0 28px 70px -38px rgba(14, 138, 69, 0.6);
+      }
+      .compare-card h3 {
+        font-size: 1.25rem;
+        margin-bottom: 22px;
+      }
+      .compare-card ul {
+        list-style: none;
+        display: grid;
+        gap: 14px;
+      }
+      .compare-card li {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        color: var(--muted);
+        font-size: 0.93rem;
+      }
+      .compare-card.featured li {
+        color: var(--d-muted);
+      }
+      .compare-card li svg {
+        width: 18px;
+        height: 18px;
+        flex: none;
+        margin-top: 3px;
+      }
+      .compare-card.featured li svg {
+        color: var(--lime);
+      }
+      .compare-card:not(.featured) li svg {
+        color: var(--dim);
+      }
+      .compare-card b {
+        color: inherit;
+      }
+      @media (max-width: 860px) {
+        .compare-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* ---------- social proof ---------- */
+      .proof-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+      }
+      .quote {
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        background: #fff;
+        padding: 26px;
+        box-shadow: var(--shadow-sm);
+        transition:
+          transform 0.25s,
+          box-shadow 0.25s;
+      }
+      .quote:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-md);
+      }
+      .quote p {
+        color: var(--muted);
+        font-size: 0.94rem;
+        margin-bottom: 22px;
+      }
+      .person {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: var(--green-tint);
+        color: var(--green);
+        font-weight: 800;
+        font-size: 0.82rem;
+      }
+      .person b {
+        display: block;
+        font-size: 0.88rem;
+      }
+      .person span {
+        display: block;
+        font-size: 0.76rem;
+        color: var(--dim);
+      }
+      @media (max-width: 860px) {
+        .proof-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* ---------- CIDADE (dark band) ---------- */
+      .city-sec {
+        padding: 96px 0;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+      .city-sec::before {
+        content: "";
+        position: absolute;
+        top: -40%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 900px;
+        height: 500px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(190, 232, 62, 0.08), transparent 65%);
+        filter: blur(50px);
+        pointer-events: none;
+      }
+      .city-sec .h-section {
+        max-width: 680px;
+        margin: 0 auto 18px;
+        position: relative;
+      }
+      .city-sec .lead {
+        max-width: 540px;
+        margin: 0 auto 40px;
+        position: relative;
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        max-width: 760px;
+        margin: 0 auto 44px;
+        position: relative;
+      }
+      .chip {
+        font-size: 0.88rem;
+        font-weight: 500;
+        color: var(--d-muted);
+        border: 1px solid var(--d-line-strong);
+        border-radius: 999px;
+        padding: 9px 19px;
+        background: rgba(255, 255, 255, 0.03);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition:
+          border-color 0.2s,
+          color 0.2s,
+          transform 0.2s;
+      }
+      .chip:hover {
+        border-color: var(--lime);
+        color: var(--d-text);
+        transform: translateY(-2px);
+      }
+      .chip::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--lime);
+      }
+      .chip.more {
+        color: var(--lime);
+        font-weight: 600;
+        border-style: dashed;
+      }
+      .chip.more::before {
+        display: none;
+      }
+
+      .city-signal {
+        max-width: 760px;
+        margin: 0 auto 34px;
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 14px;
+        position: relative;
+      }
+      .signal-card {
+        border: 1px solid var(--d-line-strong);
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.035);
+        padding: 18px;
+        text-align: left;
+        backdrop-filter: blur(12px);
+      }
+      .signal-card b {
+        font-size: 0.9rem;
+        color: var(--d-text);
+      }
+      .signal-card span {
+        display: block;
+        color: var(--d-muted);
+        font-size: 0.78rem;
+        margin-top: 4px;
+      }
+      .signal-bars {
+        display: flex;
+        align-items: end;
+        gap: 8px;
+        height: 78px;
+        margin-top: 18px;
+      }
+      .signal-bars i {
+        display: block;
+        flex: 1;
+        border-radius: 8px 8px 2px 2px;
+        background: linear-gradient(180deg, var(--lime), rgba(190, 232, 62, 0.16));
+        min-height: 18px;
+      }
+      .signal-bars i:nth-child(1) {
+        height: 38%;
+      }
+      .signal-bars i:nth-child(2) {
+        height: 54%;
+      }
+      .signal-bars i:nth-child(3) {
+        height: 44%;
+      }
+      .signal-bars i:nth-child(4) {
+        height: 80%;
+      }
+      .signal-bars i:nth-child(5) {
+        height: 62%;
+      }
+      .signal-bars i:nth-child(6) {
+        height: 92%;
+      }
+      @media (max-width: 700px) {
+        .city-signal {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* ---------- FAQ (light) ---------- */
+      .faq {
+        max-width: 720px;
+        margin: 0 auto;
+      }
+      .faq details {
+        border-bottom: 1px solid var(--line);
+      }
+      .faq details {
+        transition:
+          background 0.2s,
+          border-color 0.2s;
+        border-radius: 14px;
+        padding: 0 14px;
+      }
+      .faq details[open] {
+        background: #fff;
+        box-shadow: var(--shadow-sm);
+        border-color: transparent;
+      }
+      .faq summary {
+        list-style: none;
+        cursor: pointer;
+        padding: 24px 4px;
+        font-weight: 600;
+        font-size: 1.02rem;
+        letter-spacing: -0.015em;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+      }
+      .faq summary::-webkit-details-marker {
+        display: none;
+      }
+      .faq summary .plus {
+        width: 26px;
+        height: 26px;
+        flex: none;
+        border-radius: 50%;
+        border: 1px solid var(--line-strong);
+        display: grid;
+        place-items: center;
+        color: var(--green);
+        font-weight: 500;
+        transition:
+          transform 0.3s,
+          background 0.3s,
+          border-color 0.3s;
+        font-size: 1rem;
+        line-height: 1;
+      }
+      .faq details[open] .plus {
+        transform: rotate(45deg);
+        background: var(--green-tint);
+        border-color: transparent;
+      }
+      .faq .a {
+        padding: 0 4px 26px;
+        color: var(--muted);
+        font-size: 0.95rem;
+        line-height: 1.7;
+        max-width: 620px;
+      }
+
+      /* ---------- FINAL (dark) + form branco ---------- */
+      .final {
+        padding: 110px 0;
+        position: relative;
+        overflow: hidden;
+      }
+      .final::before {
+        content: "";
+        position: absolute;
+        top: -30%;
+        right: -10%;
+        width: 700px;
+        height: 700px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(190, 232, 62, 0.09), transparent 62%);
+        filter: blur(50px);
+        pointer-events: none;
+      }
+      .final-inner {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 64px;
+        align-items: start;
+        position: relative;
+      }
+      @media (max-width: 960px) {
+        .final-inner {
+          grid-template-columns: 1fr;
+          gap: 48px;
+        }
+      }
+      .final h2 {
+        margin-bottom: 18px;
+      }
+      .final h2 .accent-lime {
+        color: var(--lime);
+      }
+      .final .lead {
+        margin-bottom: 32px;
+        max-width: 460px;
+      }
+      .final-points {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .final-points li {
+        display: flex;
+        gap: 11px;
+        align-items: flex-start;
+        color: var(--d-muted);
+        font-size: 0.95rem;
+      }
+      .final-points svg {
+        width: 18px;
+        height: 18px;
+        color: var(--lime);
+        flex: none;
+        margin-top: 3px;
+      }
+      .final-points b {
+        color: var(--d-text);
+        font-weight: 600;
+      }
+
+      .form-card {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        padding: 38px 34px;
+        color: var(--text);
+        box-shadow:
+          0 8px 16px rgba(0, 0, 0, 0.2),
+          0 40px 90px -30px rgba(0, 0, 0, 0.5);
+      }
+      .form-card {
+        position: relative;
+        overflow: hidden;
+      }
+      .form-card::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto;
+        height: 5px;
+        background: linear-gradient(
+          90deg,
+          var(--green),
+          var(--lime),
+          var(--green-bright)
+        );
+      }
+      .form-progress {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+        margin-bottom: 22px;
+      }
+      .form-progress span {
+        height: 5px;
+        border-radius: 999px;
+        background: var(--line);
+      }
+      .form-progress span.active {
+        background: linear-gradient(90deg, var(--green), var(--green-bright));
+      }
+      @media (max-width: 560px) {
+        .form-card {
+          padding: 28px 22px;
+        }
+      }
+      .form-card h3 {
+        font-size: 1.3rem;
+        margin-bottom: 6px;
+        letter-spacing: -0.025em;
+      }
+      .form-card .sub {
+        color: var(--muted);
+        font-size: 0.88rem;
+        margin-bottom: 26px;
+      }
+      .field {
+        margin-bottom: 15px;
+      }
+      .field label {
+        display: block;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 7px;
+      }
+      .field input,
+      .field select {
+        width: 100%;
+        background: #fff;
+        border: 1px solid var(--line-strong);
+        border-radius: 12px;
+        padding: 13px 15px;
+        color: var(--text);
+        font-family: inherit;
+        font-size: 0.94rem;
+        outline: none;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+        appearance: none;
+      }
+      .field input:hover,
+      .field select:hover {
+        border-color: #c9d1cc;
+      }
+      .field select {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238A948E' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 15px center;
+      }
+      .field input:focus,
+      .field select:focus {
+        border-color: var(--green);
+        box-shadow: 0 0 0 3px rgba(14, 138, 69, 0.1);
+      }
+      .field input.err {
+        border-color: #dc2626;
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.08);
+      }
+      .field-row {
+        display: grid;
+        grid-template-columns: 1fr 110px;
+        gap: 12px;
+      }
+      @media (max-width: 480px) {
+        .field-row {
+          grid-template-columns: 1fr;
+        }
+      }
+      .segmented {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+      }
+      .segmented input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .segmented label {
+        text-align: center;
+        border: 1px solid var(--line-strong);
+        border-radius: 11px;
+        padding: 12px 6px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        color: var(--muted);
+        font-weight: 500;
+        transition: all 0.2s;
+        margin: 0;
+      }
+      .segmented input:checked + label {
+        border-color: var(--green);
+        background: var(--green-tint);
+        color: var(--green);
+        font-weight: 600;
+        box-shadow: 0 0 0 1px var(--green) inset;
+      }
+      .check {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        margin: 20px 0;
+        cursor: pointer;
+        font-size: 0.84rem;
+        color: var(--muted);
+      }
+      .check input {
+        margin-top: 3px;
+        accent-color: var(--green);
+        width: 16px;
+        height: 16px;
+        flex: none;
+        cursor: pointer;
+      }
+      .form-card .btn {
+        width: 100%;
+        padding: 16px;
+      }
+      .form-card .btn-primary {
+        background: var(--green);
+        color: #fff;
+      }
+      .form-card .btn-primary:hover {
+        background: var(--green-dark);
+      }
+      .form-note {
+        text-align: center;
+        font-size: 0.74rem;
+        color: var(--dim);
+        margin-top: 14px;
+      }
+      .form-trust {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 16px;
+      }
+      .form-trust span {
+        font-size: 0.72rem;
+        color: var(--dim);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 6px 10px;
+        background: var(--bg-soft);
+      }
+      .hp {
+        position: absolute;
+        left: -9999px;
+        opacity: 0;
+      }
+
+      .success {
+        display: none;
+        text-align: center;
+        padding: 16px 0;
+      }
+      .success.show {
+        display: block;
+        animation: fadeUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .success .ok {
+        width: 66px;
+        height: 66px;
+        border-radius: 50%;
+        margin: 0 auto 22px;
+        background: var(--green-tint);
+        display: grid;
+        place-items: center;
+      }
+      .success .ok svg {
+        width: 30px;
+        height: 30px;
+        color: var(--green);
+      }
+      .success h3 {
+        font-size: 1.35rem;
+        margin-bottom: 10px;
+      }
+      .success p {
+        color: var(--muted);
+        font-size: 0.92rem;
+        margin-bottom: 26px;
+        max-width: 340px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .success .btn-ghost {
+        background: #fff;
+        border-color: var(--line-strong);
+        color: var(--text);
+      }
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+
+      /* ---------- sticky mobile CTA ---------- */
+      .sticky-cta {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 55;
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(12px);
+        border-top: 1px solid var(--line);
+        padding: 12px var(--pad);
+        transform: translateY(110%);
+        transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+        display: none;
+      }
+      .sticky-cta.show {
+        transform: none;
+      }
+      .sticky-cta .btn {
+        width: 100%;
+        background: var(--green);
+        color: #fff;
+      }
+      @media (max-width: 860px) {
+        .sticky-cta {
+          display: block;
+        }
+      }
+
+      /* ---------- footer (light) ---------- */
+      footer {
+        padding: 56px 0 32px;
+        border-top: 1px solid var(--line);
+        background: #fff;
+      }
+      .foot-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 32px;
+        flex-wrap: wrap;
+        margin-bottom: 44px;
+      }
+      .foot-top p {
+        color: var(--muted);
+        font-size: 0.88rem;
+        max-width: 300px;
+        margin-top: 14px;
+      }
+      .foot-links {
+        display: flex;
+        gap: 36px;
+        flex-wrap: wrap;
+      }
+      .foot-col h4 {
+        font-size: 0.76rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--dim);
+        margin-bottom: 16px;
+      }
+      .foot-col a {
+        display: block;
+        color: var(--muted);
+        font-size: 0.9rem;
+        margin-bottom: 11px;
+        transition: color 0.2s;
+      }
+      .foot-col a:hover {
+        color: var(--green);
+      }
+      .foot-bottom {
+        border-top: 1px solid var(--line);
+        padding-top: 24px;
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        font-size: 0.78rem;
+        color: var(--dim);
+      }
+
+      /* ---------- reveal ---------- */
+      .reveal {
+        opacity: 0;
+        transform: translateY(22px);
+        transition:
+          opacity 0.65s cubic-bezier(0.2, 0.8, 0.2, 1),
+          transform 0.65s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .reveal.in {
+        opacity: 1;
+        transform: none;
+      }
+      .reveal.d1 {
+        transition-delay: 0.08s;
+      }
+      .reveal.d2 {
+        transition-delay: 0.16s;
+      }
+      .reveal.d3 {
+        transition-delay: 0.24s;
+      }
+      .cursor-glow {
+        position: fixed;
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 2;
+        background: radial-gradient(circle, rgba(190, 232, 62, 0.12), transparent 62%);
+        transform: translate(-50%, -50%);
+        opacity: 0;
+        transition: opacity 0.25s;
+        mix-blend-mode: screen;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
+
+    <!-- ============ NAV (adaptativa) ============ -->
+    <nav class="nav" id="nav">
+      <div class="nav-inner">
+        <a href="#" class="logo"><span class="logo-mark">R</span> RUMO</a>
+        <div class="nav-links">
+          <a href="#vantagens">Vantagens</a>
+          <a href="#produto">Produto</a>
+          <a href="#para-voce">Para você</a>
+          <a href="#como-funciona">Como funciona</a>
+          <a href="#faq">Dúvidas</a>
+        </div>
+        <a href="#lista" class="btn btn-primary">Cadastrar interesse</a>
+      </div>
+    </nav>
+
+    <!-- ============ 1. HERO — ESCURO ============ -->
+    <header class="hero sec-dark" id="hero">
+      <div class="hero-grid-bg"></div>
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="wrap hero-inner">
+        <div class="hero-copy">
+          <div class="eyebrow reveal">
+            <span class="pulse"></span> Plataforma em desenvolvimento · Lista de
+            interessados aberta
+          </div>
+          <h1 class="h-display reveal d1">
+            Um novo app de mobilidade está chegando.
+            <span class="accent-lime">Acompanhe de perto essa construção.</span>
+          </h1>
+          <p class="lead reveal d2">
+            Preço fechado para quem viaja. Ganhos justos para quem dirige. Controle total
+            para empresas. Cadastre seu interesse para receber novidades, atualizações e
+            informações sobre o lançamento da RUMO.
+          </p>
+          <form class="quick reveal d3" id="quickForm" novalidate>
+            <input
+              type="email"
+              id="quickEmail"
+              placeholder="Seu melhor e-mail"
+              autocomplete="email"
+              required
+            />
+            <button type="submit" class="btn btn-primary">
+              Cadastrar interesse <span class="arrow">→</span>
+            </button>
+          </form>
+          <div class="hero-micro reveal d3">
+            <span
+              ><svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.4"
+              >
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+              Grátis</span
+            >
+            <span
+              ><svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.4"
+              >
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+              Sem compromisso</span
+            >
+            <span
+              ><svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.4"
+              >
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+              Atualizações sobre o lançamento</span
+            >
+          </div>
+          <div class="hero-kpis reveal d3">
+            <div class="hero-kpi">
+              <strong data-count="3">0</strong
+              ><span>perfis considerados no desenvolvimento</span>
+            </div>
+            <div class="hero-kpi">
+              <strong>100%</strong><span>cadastro gratuito e sem compromisso</span>
+            </div>
+            <div class="hero-kpi">
+              <strong>1 min</strong><span>para registrar seu interesse</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mockup-zone reveal d2">
+          <div class="mock-glow"></div>
+          <div class="float-card fc-1">
+            <span class="dot"></span>
+            <div><b>Motorista a caminho</b><span>Chega em 2 min</span></div>
+          </div>
+          <div class="float-card fc-2">
+            <span class="dot"></span>
+            <div><b>Preço confirmado</b><span>Sem surpresa no destino</span></div>
+          </div>
+          <div class="phone">
+            <div class="screen">
+              <div class="notch"></div>
+              <div class="app-map">
+                <svg class="route" viewBox="0 0 270 380" preserveAspectRatio="none">
+                  <path
+                    d="M62 92 C 120 110, 110 200, 160 220 S 200 250, 192 248"
+                    fill="none"
+                    stroke="rgba(14,138,69,.85)"
+                    stroke-width="3.5"
+                    stroke-linecap="round"
+                    stroke-dasharray="1 9"
+                  />
+                  <path
+                    d="M62 92 C 120 110, 110 200, 160 220 S 200 250, 192 248"
+                    fill="none"
+                    stroke="rgba(14,138,69,.12)"
+                    stroke-width="9"
+                    stroke-linecap="round"
+                  />
+                </svg>
+                <span class="map-pin pin-a"></span>
+                <span class="map-pin pin-b"></span>
+              </div>
+              <div class="app-sheet">
+                <div class="sheet-handle"></div>
+                <div class="ride-row">
+                  <div class="ride-ic">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path d="M5 17h14M6 17l1.5-6h9L18 17M8 11V8a4 4 0 0 1 8 0v3" />
+                      <circle cx="7.5" cy="17" r="1.6" />
+                      <circle cx="16.5" cy="17" r="1.6" />
+                    </svg>
+                  </div>
+                  <div class="ride-meta">
+                    <b>RUMO Conforto</b><span>Chega em 4 min · 8,2 km</span>
+                  </div>
+                  <div class="ride-price">R$ 18,90<small>preço fechado</small></div>
+                </div>
+                <div class="ride-row">
+                  <div class="ride-ic">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path d="M12 2 3 7v6c0 5 4 8.4 9 9 5-.6 9-4 9-9V7l-9-5Z" />
+                      <path d="m9 12 2 2 4-4" />
+                    </svg>
+                  </div>
+                  <div class="ride-meta">
+                    <b>Carlos · 4,98 ★</b><span>Motorista verificado</span>
+                  </div>
+                </div>
+                <button class="sheet-btn" tabindex="-1">Confirmar corrida</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ============ TRUST STRIP ============ -->
+    <section class="trust-strip" aria-label="Diferenciais da RUMO">
+      <div class="wrap trust-inner">
+        <div class="trust-label">Pensada para</div>
+        <div class="marquee">
+          <div class="marquee-track">
+            <span class="trust-pill">Preço fechado</span>
+            <span class="trust-pill">Ganhos mais justos</span>
+            <span class="trust-pill">Empresas com controle</span>
+            <span class="trust-pill">Motoristas verificados</span>
+            <span class="trust-pill">Demanda por cidade</span>
+            <span class="trust-pill">Atualizações de lançamento</span>
+            <span class="trust-pill">Preço fechado</span>
+            <span class="trust-pill">Ganhos mais justos</span>
+            <span class="trust-pill">Empresas com controle</span>
+            <span class="trust-pill">Motoristas verificados</span>
+            <span class="trust-pill">Demanda por cidade</span>
+            <span class="trust-pill">Atualizações de lançamento</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PRODUCT BENTO ============ -->
+    <section class="section" id="produto">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div class="kicker">Produto com intenção</div>
+          <h2 class="h-section">
+            A RUMO nasce para corrigir os pontos que mais desgastam a mobilidade urbana.
+          </h2>
+          <p class="lead">
+            Cada fluxo foi desenhado para reduzir incerteza: no preço, no ganho, no
+            controle e no momento em que sua cidade entra no mapa.
+          </p>
+        </div>
+        <div class="bento">
+          <div class="bento-card large reveal">
+            <h3>Transparência visível antes da corrida começar</h3>
+            <p>
+              Passageiro sabe o valor. Motorista vê o líquido. Empresa acompanha o custo.
+              A experiência fica mais limpa porque ninguém descobre a regra tarde demais.
+            </p>
+            <div class="metric-row">
+              <div class="metric">
+                <div class="metric-value" data-count="0">0</div>
+                <div class="metric-label">surpresas no destino</div>
+              </div>
+              <div class="metric">
+                <div class="metric-value" data-count="1">0</div>
+                <div class="metric-label">painel para operação</div>
+              </div>
+              <div class="metric">
+                <div class="metric-value" data-count="3">0</div>
+                <div class="metric-label">perfis no lançamento</div>
+              </div>
+            </div>
+            <div class="mini-dashboard">
+              <div class="dash-row">
+                <b>Corrida Centro → Praia Brava</b
+                ><span class="dash-chip">R$ 18,90 fechado</span>
+              </div>
+              <div class="dash-row">
+                <b>Repasse estimado ao motorista</b><span>visível antes do aceite</span>
+              </div>
+              <div class="dash-row">
+                <b>Centro de custo</b><span>Marketing · aprovado</span>
+              </div>
+            </div>
+          </div>
+          <div class="bento-col">
+            <div class="bento-card dark reveal d1">
+              <h3>Fila inteligente por cidade</h3>
+              <p>
+                O lançamento segue o sinal real de demanda. Mais cadastros significam mais
+                prioridade.
+              </p>
+              <div class="queue-rail"><span></span></div>
+              <div class="queue-list">
+                <div class="queue-item">
+                  <span>Itajaí</span><strong>alta tração</strong>
+                </div>
+                <div class="queue-item">
+                  <span>Balneário Camboriú</span><strong>crescendo</strong>
+                </div>
+                <div class="queue-item">
+                  <span>Sua cidade</span><strong>+1 voto hoje</strong>
+                </div>
+              </div>
+            </div>
+            <div class="bento-card reveal d2">
+              <h3>Comunidade inicial de interessados</h3>
+              <p>
+                Quem se cadastra agora ajuda a RUMO a entender demanda, prioridades e
+                contexto real antes do lançamento público.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 2. O QUE VOCÊ GARANTE — BRANCO ============ -->
+    <section class="section" id="vantagens">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <div class="kicker">Por que se cadastrar</div>
+          <h2 class="h-section">
+            Entrar na lista é mostrar interesse e
+            <span class="hl">acompanhar a evolução.</span>
+          </h2>
+        </div>
+        <div class="gain-grid">
+          <div class="gain reveal">
+            <div class="ic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path
+                  d="M12 2v4M12 18v4M4.9 4.9l2.9 2.9M16.2 16.2l2.9 2.9M2 12h4M18 12h4M4.9 19.1l2.9-2.9M16.2 7.8l2.9-2.9"
+                />
+              </svg>
+            </div>
+            <h3>Você acompanha o projeto de perto</h3>
+            <p>
+              Seu cadastro nos ajuda a comunicar novidades, atualizações e informações
+              relevantes conforme a plataforma avança.
+            </p>
+          </div>
+          <div class="gain reveal d1">
+            <div class="ic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 3h12l4 6-10 12L2 9l4-6Z" />
+                <path d="M11 3 8 9l4 12 4-12-3-6" />
+              </svg>
+            </div>
+            <h3>Seu interesse orienta prioridades</h3>
+            <p>
+              A base de interessados ajuda a RUMO a entender quais públicos, necessidades
+              e regiões devem receber mais atenção no lançamento.
+            </p>
+          </div>
+          <div class="gain reveal d2">
+            <div class="ic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+            </div>
+            <h3>Você sinaliza demanda real</h3>
+            <p>
+              Os cadastros indicam onde existe maior interesse pela solução e ajudam a
+              planejar os próximos passos da operação.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ COMPARISON ============ -->
+    <section class="section compare-sec">
+      <div class="wrap">
+        <div class="section-head center reveal">
+          <div class="kicker">Lista de interessados, com intenção</div>
+          <h2 class="h-section">
+            Não é só deixar um e-mail. É ajudar a RUMO a entender a demanda antes do
+            lançamento.
+          </h2>
+        </div>
+        <div class="compare-grid">
+          <div class="compare-card reveal">
+            <h3>Ficar de fora</h3>
+            <ul>
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M18 6 6 18M6 6l12 12" /></svg
+                ><span
+                  >Não receber comunicações diretas sobre a evolução da plataforma</span
+                >
+              </li>
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M18 6 6 18M6 6l12 12" /></svg
+                ><span
+                  >Não sinalizar seu interesse no tipo de mobilidade que a RUMO está
+                  construindo</span
+                >
+              </li>
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M18 6 6 18M6 6l12 12" /></svg
+                ><span
+                  >Ficar distante das próximas atualizações de produto e lançamento</span
+                >
+              </li>
+            </ul>
+          </div>
+          <div class="compare-card featured reveal d1">
+            <h3>Cadastrar interesse</h3>
+            <ul>
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.4"
+                >
+                  <path d="M20 6 9 17l-5-5" /></svg
+                ><span><b>Contato registrado</b> na base de interessados da RUMO</span>
+              </li>
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.4"
+                >
+                  <path d="M20 6 9 17l-5-5" /></svg
+                ><span
+                  ><b>Comunicações futuras</b> sobre novidades, atualizações e
+                  lançamento</span
+                >
+              </li>
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.4"
+                >
+                  <path d="M20 6 9 17l-5-5" /></svg
+                ><span
+                  ><b>Sinal de demanda</b> para orientar os próximos passos do
+                  projeto</span
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 3. PERFIS — ESCURO ============ -->
+    <section class="section sec-dark" id="para-voce">
+      <div class="wrap">
+        <div class="section-head center reveal">
+          <div class="kicker">Feita para o seu lado da rua</div>
+          <h2 class="h-section">Em qual dessas frases você se reconhece?</h2>
+        </div>
+        <div class="profiles">
+          <div class="profile featured reveal">
+            <span class="tag">Motoristas</span>
+            <h3>"Rodo o dia inteiro e sobra pouco."</h3>
+            <p class="sub">Você merece ficar com mais do que você produz.</p>
+            <ul>
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.4"
+                >
+                  <path d="M20 6 9 17l-5-5" /></svg
+                ><span><b>Modelo mais justo</b> pensado para valorizar quem dirige</span>
+              </li>
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.4"
+                >
+                  <path d="M20 6 9 17l-5-5" /></svg
+                ><span
+                  ><b>Veja o valor líquido</b> antes de aceitar qualquer corrida</span
+                >
+              </li>
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.4"
+                >
+                  <path d="M20 6 9 17l-5-5" /></svg
+                ><span><b>Saque rápido</b>, sem burocracia e sem pegadinha</span>
+              </li>
+            </ul>
+            <a href="#lista" class="btn btn-primary"
+              >Tenho interesse em dirigir <span class="arrow">→</span></a
+            >
+          </div>
+          <div class="profile reveal d1">
+            <span class="tag">Passageiros</span>
+            <h3>"Só quero chegar. Sem surpresa no preço."</h3>
+            <p class="sub">O valor que você vê é o valor que você paga.</p>
+            <ul>
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.4"
+                >
+                  <path d="M20 6 9 17l-5-5" /></svg
+                ><span><b>Preço fechado</b> confirmado antes de chamar</span>
+              </li>
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.4"
+                >
+                  <path d="M20 6 9 17l-5-5" /></svg
+                ><span
+                  ><b>Motoristas verificados</b> e viagem compartilhável em tempo
+                  real</span
+                >
+              </li>
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.4"
+                >
+                  <path d="M20 6 9 17l-5-5" /></svg
+                ><span
+                  ><b>Experiência simples</b> para acompanhar o desenvolvimento da
+                  plataforma</span
+                >
+              </li>
+            </ul>
+            <a href="#lista" class="btn btn-ghost"
+              >Tenho interesse em usar <span class="arrow">→</span></a
+            >
+          </div>
+          <div class="profile reveal d2">
+            <span class="tag">Empresas</span>
+            <h3>"Meu time se move e eu não enxergo nada."</h3>
+            <p class="sub">Corridas corporativas com visibilidade total.</p>
+            <ul>
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.4"
+                >
+                  <path d="M20 6 9 17l-5-5" /></svg
+                ><span><b>Painel único</b> de corridas, custos e equipes</span>
+              </li>
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.4"
+                >
+                  <path d="M20 6 9 17l-5-5" /></svg
+                ><span><b>Fatura única</b> — fim dos reembolsos manuais</span>
+              </li>
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.4"
+                >
+                  <path d="M20 6 9 17l-5-5" /></svg
+                ><span
+                  ><b>Interesse corporativo</b> registrado para futuras atualizações</span
+                >
+              </li>
+            </ul>
+            <a href="#lista" class="btn btn-ghost"
+              >Quero para minha empresa <span class="arrow">→</span></a
+            >
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 4. COMO FUNCIONA — BRANCO ============ -->
+    <section class="section" id="como-funciona">
+      <div class="wrap">
+        <div class="section-head center reveal">
+          <div class="kicker">Simples assim</div>
+          <h2 class="h-section">Do cadastro às próximas novidades em 3 passos</h2>
+        </div>
+        <div class="how-grid">
+          <div class="how-step reveal">
+            <div class="n">1</div>
+            <h3>Registre seu interesse</h3>
+            <p>
+              Preencha o cadastro em menos de um minuto. Grátis e sem nenhum compromisso.
+            </p>
+          </div>
+          <div class="how-step reveal d1">
+            <div class="n">2</div>
+            <h3>Entre na base de interessados</h3>
+            <p>
+              Seus dados ficam registrados para que possamos comunicar novidades e
+              atualizações sobre a plataforma.
+            </p>
+          </div>
+          <div class="how-step reveal d2">
+            <div class="n">3</div>
+            <h3>Acompanhe o lançamento</h3>
+            <p>
+              Conforme o projeto avançar, compartilharemos informações relevantes sobre a
+              RUMO e seus próximos passos.
+            </p>
+          </div>
+        </div>
+        <div class="how-cta reveal d3">
+          <a href="#lista" class="btn btn-primary"
+            >Registrar interesse <span class="arrow">→</span></a
+          >
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 5. CIDADE — ESCURO ============ -->
+    <section class="city-sec sec-dark">
+      <div class="wrap">
+        <div class="kicker reveal">Expansão guiada por você</div>
+        <h2 class="h-section reveal d1">
+          Quer que a RUMO chegue primeiro na <span class="hl">sua cidade?</span>
+        </h2>
+        <p class="lead reveal d2">
+          A demanda por região ajuda a orientar o planejamento da plataforma. Cada
+          cadastro contribui para entendermos onde existe mais interesse pela RUMO.
+        </p>
+        <div class="chips reveal d2">
+          <span class="chip">Itajaí</span>
+          <span class="chip">Balneário Camboriú</span>
+          <span class="chip">Brusque</span>
+          <span class="chip">Itapema</span>
+          <span class="chip">Navegantes</span>
+          <span class="chip">Blumenau</span>
+          <span class="chip">Florianópolis</span>
+          <span class="chip">Joinville</span>
+          <span class="chip more">+ a sua cidade</span>
+        </div>
+        <div class="city-signal reveal d2">
+          <div class="signal-card">
+            <b>Sinal de demanda por região</b>
+            <span
+              >Quanto mais gente se cadastra, mais clareza temos sobre interesse local e
+              prioridades de planejamento.</span
+            >
+            <div class="signal-bars" aria-hidden="true">
+              <i></i><i></i><i></i><i></i><i></i><i></i>
+            </div>
+          </div>
+          <div class="signal-card">
+            <b>Base em construção</b>
+            <span
+              >Os cadastros ajudam a formar uma visão mais precisa do público interessado
+              antes do lançamento.</span
+            >
+          </div>
+        </div>
+        <a href="#lista" class="btn btn-primary reveal d3"
+          >Registrar meu interesse <span class="arrow">→</span></a
+        >
+      </div>
+    </section>
+
+    <!-- ============ SOCIAL PROOF ============ -->
+    <section class="section">
+      <div class="wrap">
+        <div class="section-head center reveal">
+          <div class="kicker">O que ouvimos no desenho do produto</div>
+          <h2 class="h-section">
+            A RUMO foi moldada a partir das fricções reais de quem se move todo dia.
+          </h2>
+        </div>
+        <div class="proof-grid">
+          <article class="quote reveal">
+            <p>
+              "Preço fechado muda tudo. Eu só quero chamar a corrida sabendo exatamente
+              quanto vai sair."
+            </p>
+            <div class="person">
+              <div class="avatar">AM</div>
+              <div><b>Ana Martins</b><span>Passageira frequente</span></div>
+            </div>
+          </article>
+          <article class="quote reveal d1">
+            <p>
+              "Se eu vejo quanto vai sobrar antes de aceitar, consigo trabalhar com mais
+              estratégia e menos tentativa."
+            </p>
+            <div class="person">
+              <div class="avatar">CR</div>
+              <div><b>Carlos Rocha</b><span>Motorista parceiro</span></div>
+            </div>
+          </article>
+          <article class="quote reveal d2">
+            <p>
+              "Para empresa, o valor está em sair do reembolso manual e enxergar as
+              viagens em tempo real."
+            </p>
+            <div class="person">
+              <div class="avatar">LS</div>
+              <div><b>Luiza Santos</b><span>Operações corporativas</span></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 6. FAQ — BRANCO ============ -->
+    <section class="section" id="faq">
+      <div class="wrap">
+        <div class="section-head center reveal">
+          <div class="kicker">Sem letras miúdas</div>
+          <h2 class="h-section">O que você precisa saber antes de entrar</h2>
+        </div>
+        <div class="faq reveal">
+          <details>
+            <summary>
+              Entrar na lista custa alguma coisa? <span class="plus">+</span>
+            </summary>
+            <div class="a">
+              Não. O cadastro é 100% gratuito e continua gratuito. Você só garante seu
+              convite prioritário e os benefícios de fundador.
+            </div>
+          </details>
+          <details>
+            <summary>
+              Estou me comprometendo com algo? <span class="plus">+</span>
+            </summary>
+            <div class="a">
+              Zero compromisso. Se quando o convite chegar você não quiser usar, é só
+              ignorar. Sua vaga não gera nenhuma obrigação — mas os benefícios de
+              fundador, sim, são só de quem entrou antes.
+            </div>
+          </details>
+          <details>
+            <summary>Quando recebo meu convite? <span class="plus">+</span></summary>
+            <div class="a">
+              Os convites saem em levas, por ordem de cadastro e por cidade. Quanto antes
+              você entra, mais cedo o seu chega — e quem está na lista é sempre avisado
+              primeiro, por e-mail e WhatsApp.
+            </div>
+          </details>
+          <details>
+            <summary>
+              Sou motorista. O que preciso para começar? <span class="plus">+</span>
+            </summary>
+            <div class="a">
+              Por agora, basta entrar na lista com seus dados de contato. Antes do seu
+              acesso ser liberado, você recebe a lista completa de requisitos (CNH com EAR
+              e documentação do veículo) com antecedência para se preparar.
+            </div>
+          </details>
+          <details>
+            <summary>
+              Minha cidade não está na lista. Posso me cadastrar?
+              <span class="plus">+</span>
+            </summary>
+            <div class="a">
+              Pode e deve. A expansão é definida pela demanda: cada cadastro puxa sua
+              cidade para a frente da fila. Cidades que ninguém esperava já subiram de
+              posição exatamente assim.
+            </div>
+          </details>
+          <details>
+            <summary>O que acontece com meus dados? <span class="plus">+</span></summary>
+            <div class="a">
+              Eles servem para uma única coisa: avisar você sobre seu convite e seus
+              benefícios. Em conformidade com a LGPD, sem spam e sem repasse a terceiros.
+              Você sai da lista quando quiser, com um clique.
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 7. CTA FINAL + FORM — ESCURO ============ -->
+    <section class="final sec-dark" id="lista">
+      <div class="wrap final-inner">
+        <div class="reveal">
+          <div class="kicker">Última chamada da página</div>
+          <h2 class="h-section">
+            Os primeiros convites saem <span class="accent-lime">desta lista.</span>
+          </h2>
+          <p class="lead">
+            Quando a RUMO abrir na sua cidade, vai existir dois grupos: quem entrou na
+            frente e quem ficou sabendo depois. Escolha o primeiro.
+          </p>
+          <ul class="final-points">
+            <li>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.4"
+              >
+                <path d="M20 6 9 17l-5-5" /></svg
+              ><span><b>Convite prioritário</b> por ordem de cadastro</span>
+            </li>
+            <li>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.4"
+              >
+                <path d="M20 6 9 17l-5-5" /></svg
+              ><span><b>Benefícios de fundador</b> que não se repetem</span>
+            </li>
+            <li>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.4"
+              >
+                <path d="M20 6 9 17l-5-5" /></svg
+              ><span><b>Sua cidade sobe na fila</b> a cada cadastro</span>
+            </li>
+            <li>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.4"
+              >
+                <path d="M20 6 9 17l-5-5" /></svg
+              ><span><b>Grátis, sem compromisso</b> e sem spam</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="form-card reveal d1">
+          <form id="waitForm" novalidate>
+            <div class="form-progress" aria-hidden="true">
+              <span class="active"></span><span></span><span></span>
+            </div>
+            <h3>Garanta sua vaga</h3>
+            <p class="sub">Menos de um minuto. A primeira leva de convites é limitada.</p>
+
+            <input
+              type="text"
+              name="website"
+              class="hp"
+              tabindex="-1"
+              autocomplete="off"
+              aria-hidden="true"
+            />
+
+            <div class="field">
+              <label for="f-nome">Nome completo</label>
+              <input
+                id="f-nome"
+                name="nome"
+                type="text"
+                placeholder="Seu nome"
+                required
+                autocomplete="name"
+              />
+            </div>
+            <div class="field">
+              <label for="f-email">E-mail</label>
+              <input
+                id="f-email"
+                name="email"
+                type="email"
+                placeholder="voce@email.com"
+                required
+                autocomplete="email"
+              />
+            </div>
+            <div class="field">
+              <label for="f-whats">WhatsApp</label>
+              <input
+                id="f-whats"
+                name="whatsapp"
+                type="tel"
+                placeholder="(47) 99999-9999"
+                required
+                inputmode="numeric"
+                autocomplete="tel"
+              />
+            </div>
+            <label class="check">
+              <input type="checkbox" name="acesso_antecipado" checked />
+              <span
+                >Quero receber meu convite de acesso antecipado por e-mail e
+                WhatsApp.</span
+              >
+            </label>
+            <button type="submit" class="btn btn-primary" id="submitBtn">
+              Garantir minha vaga <span class="arrow">→</span>
+            </button>
+            <p class="form-note">
+              Dados protegidos pela LGPD. Sem spam, saia quando quiser.
+            </p>
+            <div class="form-trust" aria-label="Garantias do formulário">
+              <span>LGPD</span>
+              <span>Sem cobrança</span>
+              <span>Sem spam</span>
+            </div>
+          </form>
+
+          <div class="success" id="successBox">
+            <div class="ok">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+              >
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+            </div>
+            <h3>Vaga garantida ✓</h3>
+            <p>
+              Você está na lista. Seu convite chegará por e-mail e WhatsApp — e cada amigo
+              que entrar puxa sua cidade ainda mais pra frente.
+            </p>
+            <a class="btn btn-ghost" id="shareBtn" target="_blank" rel="noopener"
+              >Convidar amigos pelo WhatsApp</a
+            >
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 8. FOOTER — BRANCO ============ -->
+    <footer>
+      <div class="wrap">
+        <div class="foot-top">
+          <div>
+            <a href="#" class="logo"><span class="logo-mark">R</span> RUMO</a>
+            <p>
+              Um novo jeito de se mover pela cidade. Justo para quem dirige, previsível
+              para quem viaja, transparente para quem gerencia.
+            </p>
+          </div>
+          <div class="foot-links">
+            <div class="foot-col">
+              <h4>Navegue</h4>
+              <a href="#vantagens">Vantagens</a>
+              <a href="#para-voce">Para você</a>
+              <a href="#faq">Dúvidas</a>
+            </div>
+            <div class="foot-col">
+              <h4>Legal</h4>
+              <a href="#">Privacidade</a>
+              <a href="#">Termos de uso</a>
+            </div>
+          </div>
+        </div>
+        <div class="foot-bottom">
+          <span>© 2026 RUMO Mobilidade Inteligente</span>
+          <span>Feito para quem move a cidade</span>
+        </div>
+      </div>
+    </footer>
+
+    <!-- sticky mobile CTA -->
+    <div class="sticky-cta" id="stickyCta">
+      <a href="#lista" class="btn">Garantir minha vaga <span class="arrow">→</span></a>
+    </div>
+
+    <script>
+      /* ================= CONFIG ================= */
+      // Endpoint de captura (Cloudflare Worker → Supabase, webhook, etc.)
+      // Vazio = modo demonstração (simula sucesso).
+      const WAITLIST_ENDPOINT = ""
+
+      /* ================= NAV adaptativa ================= */
+      const nav = document.getElementById("nav")
+      const hero = document.getElementById("hero")
+      function syncNav() {
+        const past = hero.getBoundingClientRect().bottom <= 68
+        nav.classList.toggle("light", past)
+      }
+      addEventListener("scroll", syncNav, { passive: true })
+      syncNav()
+
+      /* ================= Sticky CTA mobile ================= */
+      const sticky = document.getElementById("stickyCta")
+      const finalSec = document.getElementById("lista")
+      addEventListener(
+        "scroll",
+        () => {
+          const nearForm = finalSec.getBoundingClientRect().top < innerHeight
+          sticky.classList.toggle("show", scrollY > 500 && !nearForm)
+        },
+        { passive: true }
+      )
+
+      /* ================= Reveal ================= */
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              e.target.classList.add("in")
+              io.unobserve(e.target)
+            }
+          })
+        },
+        { threshold: 0.12, rootMargin: "0px 0px -6% 0px" }
+      )
+      document.querySelectorAll(".reveal").forEach((el) => io.observe(el))
+
+      /* ================= Contadores sutis ================= */
+      const counterIO = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return
+            const el = entry.target
+            const target = Number(el.dataset.count || 0)
+            const suffix = el.textContent.includes("%") ? "%" : ""
+            const duration = 900
+            const start = performance.now()
+            function tick(now) {
+              const p = Math.min((now - start) / duration, 1)
+              const eased = 1 - Math.pow(1 - p, 3)
+              el.textContent = Math.round(target * eased) + suffix
+              if (p < 1) requestAnimationFrame(tick)
+            }
+            requestAnimationFrame(tick)
+            counterIO.unobserve(el)
+          })
+        },
+        { threshold: 0.5 }
+      )
+      document.querySelectorAll("[data-count]").forEach((el) => counterIO.observe(el))
+
+      /* ================= Cursor glow discreto ================= */
+      const cursorGlow = document.getElementById("cursorGlow")
+      const finePointer =
+        matchMedia("(pointer:fine)").matches &&
+        !matchMedia("(prefers-reduced-motion: reduce)").matches
+      if (cursorGlow && finePointer) {
+        addEventListener(
+          "pointermove",
+          (e) => {
+            cursorGlow.style.left = e.clientX + "px"
+            cursorGlow.style.top = e.clientY + "px"
+            cursorGlow.style.opacity = ".9"
+          },
+          { passive: true }
+        )
+        addEventListener("pointerleave", () => {
+          cursorGlow.style.opacity = "0"
+        })
+      }
+
+      /* ================= FAQ ================= */
+      document.querySelectorAll(".faq details").forEach((d) => {
+        d.addEventListener("toggle", () => {
+          if (d.open)
+            document.querySelectorAll(".faq details[open]").forEach((o) => {
+              if (o !== d) o.open = false
+            })
+        })
+      })
+
+      /* ================= Quick capture (hero) → prefill form ================= */
+      document.getElementById("quickForm").addEventListener("submit", (e) => {
+        e.preventDefault()
+        const email = document.getElementById("quickEmail").value.trim()
+        if (email) document.getElementById("f-email").value = email
+        window.dataLayer = window.dataLayer || []
+        window.dataLayer.push({ event: "waitlist_start", origem: "hero" })
+        document.getElementById("lista").scrollIntoView({ behavior: "smooth" })
+        setTimeout(
+          () => document.getElementById("f-nome").focus({ preventScroll: true }),
+          700
+        )
+      })
+
+      /* ================= Máscara WhatsApp ================= */
+      const whats = document.getElementById("f-whats")
+      whats.addEventListener("input", () => {
+        let v = whats.value.replace(/\D/g, "").slice(0, 11)
+        if (v.length > 6) v = `(${v.slice(0, 2)}) ${v.slice(2, 7)}-${v.slice(7)}`
+        else if (v.length > 2) v = `(${v.slice(0, 2)}) ${v.slice(2)}`
+        else if (v.length > 0) v = `(${v}`
+        whats.value = v
+      })
+
+      /* ================= Submit ================= */
+      const form = document.getElementById("waitForm")
+      const successBox = document.getElementById("successBox")
+      const submitBtn = document.getElementById("submitBtn")
+      const progressSteps = document.querySelectorAll(".form-progress span")
+
+      function syncFormProgress() {
+        const required = Array.from(
+          form.querySelectorAll("input[required], select[required]")
+        )
+        const filled = required.filter(
+          (f) =>
+            f.value && (f.type !== "email" || /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.value))
+        ).length
+        const ratio = required.length ? filled / required.length : 1
+        progressSteps.forEach((step, i) =>
+          step.classList.toggle("active", ratio >= i / progressSteps.length)
+        )
+      }
+      form.addEventListener("input", syncFormProgress)
+      form.addEventListener("change", syncFormProgress)
+      syncFormProgress()
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault()
+        if (form.website.value) return // honeypot
+
+        let valid = true
+        form.querySelectorAll("input[required], select[required]").forEach((f) => {
+          const bad =
+            !f.value.trim() ||
+            (f.type === "email" && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.value))
+          f.classList.toggle("err", bad)
+          if (bad) valid = false
+        })
+        if (!valid) return
+
+        const data = Object.fromEntries(new FormData(form).entries())
+        delete data.website
+        data.origem = "landing_waitlist"
+        data.data_cadastro = new Date().toISOString()
+
+        submitBtn.disabled = true
+        submitBtn.innerHTML = "Enviando..."
+
+        try {
+          if (WAITLIST_ENDPOINT) {
+            const res = await fetch(WAITLIST_ENDPOINT, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(data),
+            })
+            if (!res.ok) throw new Error("endpoint")
+          }
+
+          // Conversão: GTM + Meta Pixel
+          window.dataLayer = window.dataLayer || []
+          window.dataLayer.push({
+            event: "waitlist_submit",
+          })
+          if (typeof fbq === "function")
+            fbq("track", "Lead", { content_name: "waitlist" })
+
+          form.style.display = "none"
+          successBox.classList.add("show")
+          document.getElementById("shareBtn").href =
+            "https://wa.me/?text=" +
+            encodeURIComponent(
+              "Garanti meu acesso antecipado à RUMO, o novo app de mobilidade que está chegando. Entra na lista também e puxa nossa cidade pra frente: " +
+                location.href
+            )
+        } catch (err) {
+          submitBtn.disabled = false
+          submitBtn.innerHTML = 'Tentar novamente <span class="arrow">→</span>'
+        }
+      })
+    </script>
+  </body>
+</html>

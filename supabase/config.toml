@@ -1,0 +1,13 @@
+project_id = "rumo"
+
+[db]
+port = 54322
+major_version = 17
+
+[api]
+enabled = true
+port = 54321
+
+[studio]
+enabled = true
+port = 54323

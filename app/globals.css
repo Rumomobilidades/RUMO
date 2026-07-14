@@ -1,0 +1,242 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* RUMO brand tokens — extra accents not covered by the semantic set above. */
+  --color-rumo-dim: var(--rumo-dim);
+  --color-rumo-green: var(--rumo-green);
+  --color-rumo-green-dark: var(--rumo-green-dark);
+  --color-rumo-green-bright: var(--rumo-green-bright);
+  --color-rumo-lime: var(--rumo-lime);
+  --color-rumo-lime-soft: var(--rumo-lime-soft);
+  --color-rumo-ink: var(--rumo-ink);
+}
+
+/*
+ * RUMO design tokens.
+ * :root = tema "claro" (usado nas seções brancas da landing).
+ * .sec-dark = tema "escuro" (hero, perfis, cidade, CTA final) — escopado por
+ * seção, não por preferência do usuário. Componentes shadcn (Button, Card,
+ * Input, Badge, Accordion) herdam automaticamente o tema correto porque leem
+ * as mesmas variáveis semânticas (--primary, --background, --border, etc).
+ */
+:root {
+  --background: #ffffff;
+  --foreground: #101613;
+  --card: #ffffff;
+  --card-foreground: #101613;
+  --popover: #ffffff;
+  --popover-foreground: #101613;
+  --primary: #0e8a45;
+  --primary-foreground: #ffffff;
+  --secondary: #f7f8f7;
+  --secondary-foreground: #101613;
+  --muted: #f7f8f7;
+  --muted-foreground: #5b6660;
+  --accent: #e7f5ec;
+  --accent-foreground: #0e8a45;
+  --destructive: #dc2626;
+  --border: #e8eae8;
+  --input: #dde1dd;
+  --ring: #0e8a45;
+  --radius: 1.125rem;
+
+  --rumo-dim: #8a948e;
+  --rumo-green: #0e8a45;
+  --rumo-green-dark: #0a6e37;
+  --rumo-green-bright: #16a35a;
+  --rumo-lime: #bee83e;
+  --rumo-lime-soft: #d6f776;
+  --rumo-ink: #07100b;
+
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.sec-dark {
+  --background: #0c100e;
+  --foreground: #f2f5f2;
+  --card: #161c19;
+  --card-foreground: #f2f5f2;
+  --popover: #131816;
+  --popover-foreground: #f2f5f2;
+  --primary: #bee83e;
+  --primary-foreground: #0c100e;
+  --secondary: #131816;
+  --secondary-foreground: #f2f5f2;
+  --muted: #131816;
+  --muted-foreground: #9aa69e;
+  --accent: rgba(190, 232, 62, 0.1);
+  --accent-foreground: #bee83e;
+  --destructive: #f87171;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.14);
+  --ring: #bee83e;
+
+  --rumo-dim: #6b776f;
+}
+
+/*
+ * Reverte o escopo .sec-dark para o tema claro — usado por elementos que
+ * precisam se destacar sobre um fundo escuro (ex: o card do formulário final),
+ * sem precisar de cores hardcoded soltas pelo componente.
+ */
+.sec-light {
+  --background: #ffffff;
+  --foreground: #101613;
+  --card: #ffffff;
+  --card-foreground: #101613;
+  --popover: #ffffff;
+  --popover-foreground: #101613;
+  --primary: #0e8a45;
+  --primary-foreground: #ffffff;
+  --secondary: #f7f8f7;
+  --secondary-foreground: #101613;
+  --muted: #f7f8f7;
+  --muted-foreground: #5b6660;
+  --accent: #e7f5ec;
+  --accent-foreground: #0e8a45;
+  --destructive: #dc2626;
+  --border: #e8eae8;
+  --input: #dde1dd;
+  --ring: #0e8a45;
+
+  --rumo-dim: #8a948e;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply scroll-smooth font-sans;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+}
+
+@layer utilities {
+  /* Realce em degradê usado nos títulos de seções escuras (hero, CTA final). */
+  .text-gradient-lime {
+    background: linear-gradient(100deg, var(--rumo-lime) 20%, #57c878 95%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Sublinhado em "marca-texto" usado em destaques dentro de títulos claros. */
+  .text-highlight {
+    background: linear-gradient(180deg, transparent 62%, rgba(190, 232, 62, 0.55) 62%);
+    padding: 0 2px;
+  }
+  .sec-dark .text-highlight {
+    background: linear-gradient(180deg, transparent 62%, rgba(190, 232, 62, 0.28) 62%);
+  }
+
+  .animate-floaty {
+    animation: floaty 6s ease-in-out infinite;
+  }
+  .animate-pulse-dot {
+    animation: pulse-dot 2.4s infinite;
+  }
+  .animate-marquee {
+    animation: marquee 26s linear infinite;
+  }
+  .animate-rail {
+    animation: rail 3.4s ease-in-out infinite;
+  }
+}
+
+@keyframes floaty {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-9px);
+  }
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(190, 232, 62, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(190, 232, 62, 0);
+  }
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes rail {
+  50% {
+    width: 86%;
+  }
+}
