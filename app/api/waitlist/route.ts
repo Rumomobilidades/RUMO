@@ -43,6 +43,11 @@ export async function POST(request: Request): Promise<NextResponse<WaitlistApiRe
   const parsed = waitlistSchema.safeParse(body)
 
   if (!parsed.success) {
+    const issues = parsed.error.issues.map((issue) => ({
+      path: issue.path.join("."),
+      message: issue.message,
+    }))
+
     return NextResponse.json(
       {
         success: false,
@@ -50,6 +55,7 @@ export async function POST(request: Request): Promise<NextResponse<WaitlistApiRe
           code: "validation_error",
           message: parsed.error.issues[0]?.message ?? "Dados inválidos.",
         },
+        issues,
       },
       { status: 400 }
     )

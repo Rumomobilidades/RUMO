@@ -11,8 +11,11 @@ import { trackLeadEvent } from "@/services/analytics"
 import {
   waitlistSchema,
   type WaitlistApiResponse,
+  type WaitlistFormInput,
   type WaitlistFormValues,
 } from "@/features/landing/waitlist/schema"
+
+const FORM_FIELD_NAMES = new Set(Object.keys(waitlistSchema.shape))
 
 async function submitWaitlistEntry(
   values: WaitlistFormValues
@@ -27,7 +30,7 @@ async function submitWaitlistEntry(
 }
 
 export function useWaitlistForm() {
-  const form = useForm<WaitlistFormValues>({
+  const form = useForm<WaitlistFormInput, unknown, WaitlistFormValues>({
     resolver: zodResolver(waitlistSchema),
     defaultValues: {
       name: "",
@@ -55,9 +58,25 @@ export function useWaitlistForm() {
     const result = await mutation.mutateAsync({ ...values, ...tracking, ...pageContext })
 
     if (!result.success) {
-      form.setError(result.error.code === "duplicate_email" ? "email" : "root", {
-        message: result.error.message,
-      })
+      if (result.error.code === "duplicate_email") {
+        form.setError("email", { message: result.error.message })
+        return
+      }
+
+      if (result.error.code === "validation_error" && result.issues?.length) {
+        for (const issue of result.issues) {
+          if (FORM_FIELD_NAMES.has(issue.path)) {
+            form.setError(issue.path as keyof WaitlistFormInput, {
+              message: issue.message,
+            })
+          } else {
+            form.setError("root", { message: issue.message })
+          }
+        }
+        return
+      }
+
+      form.setError("root", { message: result.error.message })
       return
     }
 

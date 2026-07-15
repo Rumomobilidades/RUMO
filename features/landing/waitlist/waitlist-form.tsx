@@ -2,7 +2,6 @@
 
 import { AnimatePresence, motion } from "framer-motion"
 import { Loader2 } from "lucide-react"
-import { Controller } from "react-hook-form"
 
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -55,6 +54,7 @@ export function WaitlistForm() {
                 render={({ field }) => (
                   <input
                     {...field}
+                    value={field.value ?? ""}
                     type="text"
                     tabIndex={-1}
                     autoComplete="off"
@@ -124,6 +124,7 @@ export function WaitlistForm() {
                           placeholder="Sua cidade"
                           autoComplete="address-level2"
                           {...field}
+                          value={field.value ?? ""}
                         />
                       </FormControl>
                       <FormMessage />
@@ -142,6 +143,7 @@ export function WaitlistForm() {
                           maxLength={2}
                           autoComplete="address-level1"
                           {...field}
+                          value={field.value ?? ""}
                         />
                       </FormControl>
                       <FormMessage />
@@ -150,16 +152,20 @@ export function WaitlistForm() {
                 />
               </div>
 
-              <div className="mb-5.5">
-                <FormLabel className="mb-2 block">Você é...</FormLabel>
-                <Controller
-                  control={form.control}
-                  name="profile"
-                  render={({ field }) => (
-                    <ProfileSegmented value={field.value} onChange={field.onChange} />
-                  )}
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="profile"
+                render={({ field }) => (
+                  <FormItem className="mb-5.5">
+                    <FormLabel className="mb-2 block">Você é...</FormLabel>
+                    <ProfileSegmented
+                      value={field.value ?? undefined}
+                      onChange={field.onChange}
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <FormField
                 control={form.control}
