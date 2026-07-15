@@ -64,12 +64,12 @@ export function WaitlistForm() {
                 )}
               />
 
-              <div className="mb-4 grid gap-4 min-[481px]:grid-cols-2">
+              <div className="mb-4 grid gap-4">
                 <FormField
                   control={form.control}
                   name="name"
                   render={({ field }) => (
-                    <FormItem className="min-[481px]:col-span-2">
+                    <FormItem>
                       <FormLabel>Nome completo</FormLabel>
                       <FormControl>
                         <Input placeholder="Seu nome" autoComplete="name" {...field} />
@@ -82,7 +82,7 @@ export function WaitlistForm() {
                   control={form.control}
                   name="email"
                   render={({ field }) => (
-                    <FormItem className="min-[481px]:col-span-2">
+                    <FormItem>
                       <FormLabel>E-mail</FormLabel>
                       <FormControl>
                         <Input
@@ -99,7 +99,7 @@ export function WaitlistForm() {
                   control={form.control}
                   name="phone"
                   render={({ field }) => (
-                    <FormItem className="min-[481px]:col-span-2">
+                    <FormItem>
                       <FormLabel>WhatsApp</FormLabel>
                       <FormControl>
                         <Input
@@ -107,43 +107,6 @@ export function WaitlistForm() {
                           inputMode="numeric"
                           autoComplete="tel"
                           {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="city"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Cidade</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Sua cidade"
-                          autoComplete="address-level2"
-                          {...field}
-                          value={field.value ?? ""}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="state"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>UF</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="SC"
-                          maxLength={2}
-                          autoComplete="address-level1"
-                          {...field}
-                          value={field.value ?? ""}
                         />
                       </FormControl>
                       <FormMessage />

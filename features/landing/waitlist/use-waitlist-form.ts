@@ -36,8 +36,6 @@ export function useWaitlistForm() {
       name: "",
       email: "",
       phone: "",
-      city: "",
-      state: "",
       website: "",
       lgpd_consent: false,
     },

@@ -38,12 +38,7 @@ export const waitlistSchema = z.object({
     .trim()
     .min(10, "Digite um WhatsApp válido com DDD.")
     .max(20, "Número muito longo."),
-  city: optionalString(80, "Cidade muito longa."),
-  state: optionalString(2, "UF inválida — use a sigla (ex.: SC)."),
-  profile: z
-    .enum(WAITLIST_PROFILES, { message: "Selecione um perfil válido." })
-    .nullish()
-    .transform((value) => (value ? value : undefined)),
+  profile: z.enum(WAITLIST_PROFILES, { message: "Selecione seu perfil." }),
   lgpd_consent: z
     .boolean({ message: "É necessário autorizar o uso dos seus dados para continuar." })
     .refine((value) => value === true, {
@@ -67,11 +62,11 @@ export const waitlistSchema = z.object({
 })
 
 /**
- * `city`/`state`/`profile`/etc. usam `.nullish().transform()`, então o tipo
- * de entrada (o que o formulário guarda antes de validar) difere do tipo de
- * saída (o que sobra depois do Zod normalizar `null`/"" para `undefined`).
- * `useForm` precisa dos dois — ver a assinatura de 3 genéricos em
- * `use-waitlist-form.ts`.
+ * `landing`/`referrer`/`utm_*`/etc. usam `.nullish().transform()`, então o
+ * tipo de entrada (o que o formulário guarda antes de validar) difere do
+ * tipo de saída (o que sobra depois do Zod normalizar `null`/"" para
+ * `undefined`). `useForm` precisa dos dois — ver a assinatura de 3
+ * genéricos em `use-waitlist-form.ts`.
  */
 export type WaitlistFormInput = z.input<typeof waitlistSchema>
 export type WaitlistFormValues = z.output<typeof waitlistSchema>

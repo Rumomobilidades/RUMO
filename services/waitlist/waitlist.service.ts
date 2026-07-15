@@ -35,9 +35,11 @@ export async function insertWaitlistEntry(
     name: values.name,
     email: values.email,
     phone: values.phone,
-    city: values.city || null,
-    state: values.state ? values.state.toUpperCase() : null,
-    profile: values.profile ?? null,
+    // Removidos do formulário para reduzir atrito — coluna permanece na
+    // tabela (não há migration), só deixa de ser preenchida pelo client.
+    city: null,
+    state: null,
+    profile: values.profile,
     lgpd_consent: values.lgpd_consent,
     landing: values.landing ?? null,
     referrer: values.referrer ?? null,
