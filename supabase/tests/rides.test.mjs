@@ -213,6 +213,44 @@ ok(
 ok("tarifa mínima aplicada", (await quote(P2, 300, 60)).price_cents === 800)
 await expectErr("cotação só para passageiro", quote(D1), "not_a_passenger")
 
+// --- categorias
+r = await as("authenticated", P1, `select id, name from public.ride_categories`)
+ok("passageiro lista categorias ativas", r.rows.length === 1 && r.rows[0].id === "rumo")
+await expectErr(
+  "authenticated não altera categoria",
+  as("authenticated", P1, `update public.ride_categories set price_multiplier = 0.01`),
+  "permission denied for table ride_categories"
+)
+await db.query(
+  `insert into public.ride_categories (id, name, price_multiplier, sort_order) values ('teste_x', 'Teste', 1.50, 9), ('teste_off', 'Off', 1, 10)`
+)
+await db.query(
+  `update public.ride_categories set is_active = false where id = 'teste_off'`
+)
+r = await as(
+  "service_role",
+  null,
+  `select * from public.create_ride_quote($1,'a',-26.9,-48.6,'b',-26.95,-48.65,8200,900,'teste_x')`,
+  [P2]
+)
+ok(
+  "multiplicador da categoria entra no preço (2326 x 1,5)",
+  r.rows[0].price_cents === 3489 && r.rows[0].category_id === "teste_x",
+  String(r.rows[0].price_cents)
+)
+await expectErr(
+  "categoria inativa é recusada",
+  as(
+    "service_role",
+    null,
+    `select public.create_ride_quote($1,'a',-26.9,-48.6,'b',-26.95,-48.65,8200,900,'teste_off')`,
+    [P2]
+  ),
+  "category_not_found"
+)
+r = await as("authenticated", P1, `select count(*)::int n from public.ride_categories`)
+ok("categoria inativa não aparece para o app", r.rows[0].n === 2, String(r.rows[0].n))
+
 // --- request_ride
 await expectErr(
   "não pede corrida com cotação de outro",
@@ -262,6 +300,83 @@ r = await as(
   [P1]
 )
 ok("antes do aceite, motorista não vê dados do passageiro", r.rows[0].n === 0)
+
+// --- recusa: some só para quem recusou
+await expectErr(
+  "não aprovado não recusa",
+  as("authenticated", D3, `select public.decline_ride($1)`, [ride.id]),
+  "driver_not_approved"
+)
+await as("authenticated", D2, `select public.decline_ride($1)`, [ride.id])
+ok("quem recusou deixa de ver a solicitação", (await seen(D2)) === 0)
+ok("outro motorista continua vendo", (await seen(D1)) === 1)
+await as("authenticated", D2, `select public.decline_ride($1)`, [ride.id])
+ok("recusar duas vezes não dá erro", true)
+await expectErr(
+  "authenticated não lê ride_declines",
+  as("authenticated", D1, `select * from public.ride_declines`),
+  "permission denied for table ride_declines"
+)
+
+// --- tokens de push
+await as(
+  "authenticated",
+  P1,
+  `select public.register_push_token('ExponentPushToken[aaa]', 'ios')`
+)
+await as(
+  "authenticated",
+  P2,
+  `select public.register_push_token('ExponentPushToken[aaa]', 'android')`
+)
+r = await db.query(
+  `select user_id, platform from public.push_tokens where token = 'ExponentPushToken[aaa]'`
+)
+ok(
+  "token muda de dono ao registrar em outra conta",
+  r.rows.length === 1 && r.rows[0].user_id === P2 && r.rows[0].platform === "android"
+)
+await as(
+  "authenticated",
+  P1,
+  `select public.unregister_push_token('ExponentPushToken[aaa]')`
+)
+r = await db.query(`select count(*)::int n from public.push_tokens`)
+ok("só o dono remove o token", r.rows[0].n === 1)
+await as(
+  "authenticated",
+  P2,
+  `select public.unregister_push_token('ExponentPushToken[aaa]')`
+)
+r = await db.query(`select count(*)::int n from public.push_tokens`)
+ok("dono remove o próprio token", r.rows[0].n === 0)
+ok(
+  "token em formato inválido é recusado",
+  Boolean(
+    await err(
+      as(
+        "authenticated",
+        P1,
+        `select public.register_push_token('qualquer-coisa', 'ios')`
+      )
+    )
+  )
+)
+await expectErr(
+  "authenticated não lê push_tokens",
+  as("authenticated", P1, `select * from public.push_tokens`),
+  "permission denied for table push_tokens"
+)
+await expectErr(
+  "authenticated não lê notification_log",
+  as("authenticated", P1, `select * from public.notification_log`),
+  "permission denied for table notification_log"
+)
+await expectErr(
+  "authenticated não lê private.settings",
+  as("authenticated", P1, `select * from private.settings`),
+  "permission denied for schema private"
+)
 
 // --- accept_ride
 await expectErr(

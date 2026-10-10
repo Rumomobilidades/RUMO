@@ -71,11 +71,25 @@ async function signUp(label, role) {
 
 try {
   // --- cadastro pelo fluxo real
+  let r
   const ana = await signUp("ana", "passageiro")
   const caio = await signUp("caio", "motorista")
   const davi = await signUp("davi", "motorista")
 
-  let r = await ana.client
+  // tokens de push fictícios: validam o caminho banco -> função -> serviço de push
+  for (const [who, label] of [
+    [ana, "ana"],
+    [caio, "caio"],
+    [davi, "davi"],
+  ]) {
+    r = await who.client.rpc("register_push_token", {
+      p_token: `ExponentPushToken[e2e-${run}-${label}]`,
+      p_platform: "ios",
+    })
+    if (r.error) throw new Error("register_push_token: " + r.error.message)
+  }
+
+  r = await ana.client
     .from("profiles")
     .select("role, full_name")
     .eq("id", ana.id)
@@ -312,6 +326,51 @@ try {
     seen.join(",")
   )
   await ana.client.removeChannel(channel)
+
+  // --- notificações: o gatilho do banco chamou a função em cada evento
+  await sleep(4000)
+  r = await admin
+    .from("notification_log")
+    .select("event, recipients, tokens, delivered, errors")
+    .eq("ride_id", ride.id)
+    .order("id")
+  const events = (r.data ?? []).map((row) => row.event)
+  ok(
+    "banco disparou notificação em cada mudança de estado",
+    ["requested", "accepted", "arrived", "in_progress", "completed"].every((e) =>
+      events.includes(e)
+    ),
+    events.join(",")
+  )
+  const requested = (r.data ?? []).find((row) => row.event === "requested")
+  ok(
+    "nova solicitação mira os motoristas online",
+    requested?.recipients >= 2 && requested?.tokens >= 2,
+    JSON.stringify(requested)
+  )
+  const accepted = (r.data ?? []).find((row) => row.event === "accepted")
+  ok(
+    "aceite mira só o passageiro e chega ao serviço de push",
+    accepted?.recipients === 1 &&
+      accepted?.tokens === 1 &&
+      (accepted.delivered === 1 || Boolean(accepted.errors)),
+    JSON.stringify(accepted)
+  )
+
+  // --- recusa
+  r = await estimate(ana.client, {
+    origin: "Rua Bahia, Blumenau SC",
+    destination: "Rua XV de Novembro, Blumenau SC",
+  })
+  const ride2 = (await ana.client.rpc("request_ride", { p_quote_id: r.data.quote.id }))
+    .data
+  r = await caio.client.rpc("decline_ride", { p_ride_id: ride2.id })
+  ok("motorista recusa a solicitação", !r.error, r.error?.message)
+  r = await caio.client.from("rides").select("id").eq("id", ride2.id)
+  ok("quem recusou não vê mais a solicitação", r.data?.length === 0)
+  r = await davi.client.from("rides").select("id").eq("id", ride2.id)
+  ok("outro motorista continua vendo", r.data?.length === 1)
+  await ana.client.rpc("cancel_ride", { p_ride_id: ride2.id })
 
   // --- histórico
   r = await ana.client.from("rides").select("status").eq("id", ride.id).single()

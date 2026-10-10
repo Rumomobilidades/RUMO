@@ -16,3 +16,10 @@ port = 54323
 # funciona tanto com as chaves novas quanto com as legadas.
 [functions.estimate-ride]
 verify_jwt = false
+
+[functions.search-places]
+verify_jwt = false
+
+# Chamada só pelo banco, autenticada por segredo no cabeçalho (x-rumo-secret).
+[functions.notify-ride]
+verify_jwt = false
