@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "test:db": "node supabase/tests/rides.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "5.4.0",
@@ -33,6 +34,7 @@
     "zod": "4.4.3"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "@eslint/eslintrc": "3.3.6",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
