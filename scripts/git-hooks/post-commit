@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+# post-commit — enfileira cada commit no Inbox do segundo cérebro (Obsidian).
+#
+# Não escreve documentação de verdade (isso exige julgamento — é trabalho do
+# agente, não de um script). Só grava um registro cru do que mudou, pra
+# nenhum commit passar em branco entre sessões. Ver "RUMO Mob./SISTEMA.md"
+# — regra 0 diz para processar este arquivo no início de toda tarefa.
+#
+# Instalação (uma vez por clone/máquina):
+#   git config core.hooksPath scripts/git-hooks
+#   chmod +x scripts/git-hooks/post-commit
+
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+INBOX_DIR="$REPO_ROOT/RUMO Mob./00 Inbox"
+INBOX_FILE="$INBOX_DIR/pending-sync.md"
+
+# O vault não é versionado (repo público) — em um clone sem o vault, não faz nada.
+[ -d "$REPO_ROOT/RUMO Mob." ] || exit 0
+
+mkdir -p "$INBOX_DIR"
+
+if [ ! -f "$INBOX_FILE" ]; then
+  cat > "$INBOX_FILE" <<'HEADER'
+---
+title: Pending Sync — commits não processados
+projeto: RUMO
+stack: []
+tecnologia: []
+status: ativo
+data: 2026-10-10
+origem: git-hook
+tipo: inbox
+tags: [inbox, sync]
+relacionado: ["[[SISTEMA]]"]
+---
+
+# Pending Sync
+
+Fila automática de commits (via `scripts/git-hooks/post-commit`). No início de toda tarefa, processar cada entrada abaixo: decidir se gera ADR, nota de bug, atualização de nota de tecnologia/integração etc. — depois mover a entrada processada para o final do arquivo sob "## Processado" ou remover.
+
+## Pendente
+
+HEADER
+fi
+
+HASH="$(git rev-parse --short HEAD)"
+DATE="$(git log -1 --format=%ad --date=format:'%Y-%m-%d %H:%M')"
+AUTHOR="$(git log -1 --format=%an)"
+SUBJECT="$(git log -1 --format=%s)"
+BODY="$(git log -1 --format=%b)"
+FILES="$(git diff-tree --no-commit-id --name-only -r HEAD | sed 's/^/  - /')"
+
+{
+  echo "### \`$HASH\` — $DATE ($AUTHOR)"
+  echo "**$SUBJECT**"
+  if [ -n "$BODY" ]; then
+    echo ""
+    echo "$BODY"
+  fi
+  echo ""
+  echo "Arquivos:"
+  echo "$FILES"
+  echo ""
+} >> "$INBOX_FILE"
+
+echo "[second-brain] commit $HASH enfileirado em: RUMO Mob./00 Inbox/pending-sync.md"
