@@ -9,11 +9,13 @@ import {
 } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { Brand, Spacing } from '@/constants/theme';
+import { Icon, type IconName } from '@/components/ui';
+import { Brand, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 export function Field({ label, secureTextEntry, ...props }: TextInputProps & { label: string }) {
   const theme = useTheme();
+  const [focused, setFocused] = useState(false);
   // Campo de senha ganha "Mostrar": dá para conferir o que foi digitado (ou
   // preenchido sozinho pelo teclado) antes de enviar.
   const [revealed, setRevealed] = useState(false);
@@ -36,9 +38,24 @@ export function Field({ label, secureTextEntry, ...props }: TextInputProps & { l
       <TextInput
         accessibilityLabel={label}
         placeholderTextColor={theme.textSecondary}
-        style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
+        style={[
+          styles.input,
+          {
+            color: theme.text,
+            backgroundColor: theme.backgroundElement,
+            borderColor: focused ? theme.text : 'transparent',
+          },
+        ]}
         secureTextEntry={secureTextEntry && !revealed}
         {...props}
+        onFocus={(event) => {
+          setFocused(true);
+          props.onFocus?.(event);
+        }}
+        onBlur={(event) => {
+          setFocused(false);
+          props.onBlur?.(event);
+        }}
       />
     </View>
   );
@@ -49,13 +66,30 @@ type ButtonProps = {
   onPress: () => void;
   busy?: boolean;
   disabled?: boolean;
-  variant?: 'primary' | 'secondary' | 'danger';
+  variant?: 'primary' | 'secondary' | 'danger' | 'brand';
+  icon?: IconName;
 };
 
-export function Button({ label, onPress, busy, disabled, variant = 'primary' }: ButtonProps) {
+export function Button({ label, onPress, busy, disabled, variant = 'primary', icon }: ButtonProps) {
   const theme = useTheme();
-  const primary = variant === 'primary';
   const blocked = disabled || busy;
+
+  const background =
+    variant === 'primary'
+      ? theme.action
+      : variant === 'brand'
+        ? Brand.green
+        : variant === 'danger'
+          ? 'transparent'
+          : theme.backgroundElement;
+  const color =
+    variant === 'primary'
+      ? theme.onAction
+      : variant === 'brand'
+        ? '#ffffff'
+        : variant === 'danger'
+          ? Brand.danger
+          : theme.text;
 
   return (
     <Pressable
@@ -65,25 +99,25 @@ export function Button({ label, onPress, busy, disabled, variant = 'primary' }: 
       onPress={onPress}
       style={({ pressed }) => [
         styles.button,
-        { backgroundColor: primary ? Brand.green : theme.backgroundSelected },
-        variant === 'danger' && styles.dangerButton,
+        { backgroundColor: background },
         (pressed || blocked) && styles.dimmed,
       ]}>
       {busy ? (
-        <ActivityIndicator color={primary ? '#ffffff' : theme.text} />
+        <ActivityIndicator color={color} />
       ) : (
-        <ThemedText
-          type="smallBold"
-          style={primary ? styles.primaryLabel : variant === 'danger' ? styles.error : undefined}>
-          {label}
-        </ThemedText>
+        <>
+          {icon ? <Icon name={icon} size={18} color={color} /> : null}
+          <ThemedText type="bold" style={{ color }}>
+            {label}
+          </ThemedText>
+        </>
       )}
     </Pressable>
   );
 }
 
 type SegmentedProps<T extends string> = {
-  options: readonly { value: T; label: string }[];
+  options: readonly { value: T; label: string; icon?: IconName }[];
   value: T;
   onChange: (value: T) => void;
 };
@@ -95,14 +129,16 @@ export function Segmented<T extends string>({ options, value, onChange }: Segmen
     <View style={[styles.segmented, { backgroundColor: theme.backgroundElement }]}>
       {options.map((option) => {
         const selected = option.value === value;
+        const color = selected ? theme.onAction : theme.text;
         return (
           <Pressable
             key={option.value}
             accessibilityRole="radio"
             accessibilityState={{ selected }}
             onPress={() => onChange(option.value)}
-            style={[styles.segment, selected && { backgroundColor: Brand.green }]}>
-            <ThemedText type="smallBold" style={selected ? styles.primaryLabel : undefined}>
+            style={[styles.segment, selected && { backgroundColor: theme.action }]}>
+            {option.icon ? <Icon name={option.icon} size={16} color={color} /> : null}
+            <ThemedText type="smallBold" style={{ color }}>
               {option.label}
             </ThemedText>
           </Pressable>
@@ -115,9 +151,12 @@ export function Segmented<T extends string>({ options, value, onChange }: Segmen
 export function ErrorText({ children }: { children: string | null }) {
   if (!children) return null;
   return (
-    <ThemedText type="small" style={styles.error} accessibilityRole="alert">
-      {children}
-    </ThemedText>
+    <View style={styles.errorBox} accessibilityRole="alert">
+      <Icon name="alert-circle" size={18} color={Brand.danger} />
+      <ThemedText type="small" style={styles.errorText}>
+        {children}
+      </ThemedText>
+    </View>
   );
 }
 
@@ -125,28 +164,44 @@ const styles = StyleSheet.create({
   field: { gap: Spacing.two },
   fieldHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   input: {
-    borderRadius: 12,
+    borderRadius: Radius.medium,
+    borderWidth: 1.5,
     paddingHorizontal: Spacing.three,
-    paddingVertical: 14,
+    paddingVertical: 15,
     fontSize: 16,
   },
   button: {
-    minHeight: 52,
-    borderRadius: 14,
+    minHeight: 56,
+    borderRadius: Radius.medium,
+    flexDirection: 'row',
+    gap: Spacing.two,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: Spacing.three,
   },
-  dangerButton: { backgroundColor: 'transparent', borderWidth: 1, borderColor: Brand.danger },
-  dimmed: { opacity: 0.6 },
-  primaryLabel: { color: '#ffffff' },
-  segmented: { flexDirection: 'row', borderRadius: 14, padding: Spacing.one, gap: Spacing.one },
+  dimmed: { opacity: 0.55 },
+  segmented: {
+    flexDirection: 'row',
+    borderRadius: Radius.medium,
+    padding: Spacing.one,
+    gap: Spacing.one,
+  },
   segment: {
     flex: 1,
-    minHeight: 44,
-    borderRadius: 10,
+    minHeight: 46,
+    borderRadius: Radius.small,
+    flexDirection: 'row',
+    gap: 6,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  error: { color: Brand.danger },
+  errorBox: {
+    flexDirection: 'row',
+    gap: Spacing.two,
+    alignItems: 'flex-start',
+    backgroundColor: '#FEF3F2',
+    borderRadius: Radius.small,
+    padding: 12,
+  },
+  errorText: { flex: 1, color: '#B42318' },
 });

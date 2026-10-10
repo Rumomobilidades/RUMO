@@ -2,6 +2,7 @@ import { Link } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { BrandMark } from '@/components/brand-mark';
 import { Button, ErrorText, Field } from '@/components/form';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
@@ -36,7 +37,8 @@ export default function LoginScreen() {
   return (
     <Screen>
       <View style={styles.header}>
-        <ThemedText type="title">RUMO</ThemedText>
+        <BrandMark />
+        <ThemedText type="subtitle">Bem-vindo de volta</ThemedText>
         <ThemedText themeColor="textSecondary">Entre para pedir ou aceitar corridas.</ThemedText>
       </View>
 
@@ -73,7 +75,7 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: { gap: Spacing.two, marginTop: Spacing.five },
+  header: { gap: Spacing.two, marginTop: Spacing.four },
   form: { gap: Spacing.three },
   link: { alignSelf: 'center' },
 });

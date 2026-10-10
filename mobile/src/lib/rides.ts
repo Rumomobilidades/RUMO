@@ -1,8 +1,17 @@
 import { supabase } from '@/lib/supabase';
-import type { Counterpart, Driver, Quote, Ride, RideStatus, RideView, Role } from '@/lib/types';
+import type {
+  Counterpart,
+  Driver,
+  LatLng,
+  Quote,
+  Ride,
+  RideStatus,
+  RideView,
+  Role,
+} from '@/lib/types';
 
 const RIDE_COLUMNS =
-  'id, passenger_id, driver_id, origin_address, destination_address, distance_m, duration_s, estimated_price_cents, status, requested_at, accepted_at, arrived_at, started_at, completed_at, cancelled_at, cancelled_by, cancel_reason';
+  'id, passenger_id, driver_id, origin_address, origin_lat, origin_lng, destination_address, destination_lat, destination_lng, distance_m, duration_s, estimated_price_cents, status, requested_at, accepted_at, arrived_at, started_at, completed_at, cancelled_at, cancelled_by, cancel_reason';
 
 const DRIVER_COLUMNS = 'id, approval_status, is_online, vehicle_model, vehicle_plate';
 
@@ -82,7 +91,10 @@ export async function fetchDriver(userId: string): Promise<Driver | null> {
 }
 
 /** Pede ao servidor a estimativa (rota real + tarifa). O app não calcula preço. */
-export async function estimateRide(origin: string, destination: string): Promise<Quote> {
+export async function estimateRide(
+  origin: string | { lat: number; lng: number },
+  destination: string,
+): Promise<Quote> {
   const { data, error } = await supabase.functions.invoke('estimate-ride', {
     body: { origin, destination },
   });
@@ -133,4 +145,41 @@ export async function updateVehicle(userId: string, model: string, plate: string
       .select(DRIVER_COLUMNS)
       .single(),
   ) as Driver;
+}
+
+/**
+ * Traçado da rota para DESENHAR no mapa. É só visual: distância, duração e
+ * preço continuam vindo da cotação do servidor. Se o serviço público de rotas
+ * não responder, o mapa fica só com os dois pontos.
+ */
+export async function fetchRouteLine(from: LatLng, to: LatLng): Promise<LatLng[]> {
+  try {
+    const coords = `${from.longitude},${from.latitude};${to.longitude},${to.latitude}`;
+    const response = await fetch(
+      `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`,
+    );
+    if (!response.ok) return [];
+    const data = (await response.json()) as {
+      routes?: { geometry: { coordinates: [number, number][] } }[];
+    };
+    const line = data.routes?.[0]?.geometry.coordinates ?? [];
+    return line.map(([longitude, latitude]) => ({ latitude, longitude }));
+  } catch {
+    return [];
+  }
+}
+
+/** Destinos das últimas corridas concluídas, sem repetição — atalhos da tela inicial. */
+export async function fetchRecentDestinations(userId: string): Promise<string[]> {
+  const rows = unwrap(
+    await supabase
+      .from('rides')
+      .select('destination_address')
+      .eq('passenger_id', userId)
+      .eq('status', 'completed')
+      .order('requested_at', { ascending: false })
+      .limit(15),
+  ) as { destination_address: string }[];
+
+  return [...new Set(rows.map((row) => row.destination_address))].slice(0, 3);
 }

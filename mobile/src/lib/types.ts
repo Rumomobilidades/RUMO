@@ -35,10 +35,16 @@ export const ACTIVE_STATUSES: readonly RideStatus[] = [
   'in_progress',
 ];
 
+export type LatLng = { latitude: number; longitude: number };
+
 export type Quote = {
   id: string;
   origin_address: string;
+  origin_lat: number;
+  origin_lng: number;
   destination_address: string;
+  destination_lat: number;
+  destination_lng: number;
   distance_m: number;
   duration_s: number;
   price_cents: number;
@@ -50,7 +56,11 @@ export type Ride = {
   passenger_id: string;
   driver_id: string | null;
   origin_address: string;
+  origin_lat: number;
+  origin_lng: number;
   destination_address: string;
+  destination_lat: number;
+  destination_lng: number;
   distance_m: number;
   duration_s: number;
   estimated_price_cents: number;

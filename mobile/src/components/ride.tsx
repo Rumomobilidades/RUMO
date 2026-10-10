@@ -1,19 +1,11 @@
-import type { ReactNode } from 'react';
 import { ActivityIndicator, Linking, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+import { Avatar, Chip, Icon } from '@/components/ui';
 import { Brand, Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import { formatDistance, formatDuration, formatPrice } from '@/lib/format';
-import type { Counterpart, RideStatus } from '@/lib/types';
-
-export function Card({ children }: { children: ReactNode }) {
-  return (
-    <ThemedView type="backgroundElement" style={styles.card}>
-      {children}
-    </ThemedView>
-  );
-}
+import type { Counterpart } from '@/lib/types';
 
 /** Estado de carregamento de uma seção inteira. */
 export function Loading({ label }: { label: string }) {
@@ -28,95 +20,106 @@ export function Loading({ label }: { label: string }) {
 }
 
 export function Empty({ title, hint }: { title: string; hint?: string }) {
-  return (
-    <Card>
-      <ThemedText type="smallBold">{title}</ThemedText>
-      {hint ? <ThemedText themeColor="textSecondary">{hint}</ThemedText> : null}
-    </Card>
-  );
-}
+  const theme = useTheme();
 
-const STATUS_TONE: Record<RideStatus, string> = {
-  requested: '#B54708',
-  accepted: Brand.green,
-  arrived: Brand.green,
-  in_progress: Brand.green,
-  completed: '#475467',
-  cancelled: Brand.danger,
-};
-
-export function StatusBadge({ status, label }: { status: RideStatus; label: string }) {
   return (
-    <View style={[styles.badge, { backgroundColor: STATUS_TONE[status] }]}>
-      <ThemedText type="smallBold" style={styles.badgeLabel}>
-        {label}
-      </ThemedText>
+    <View style={[styles.empty, { backgroundColor: theme.backgroundElement }]}>
+      <ThemedText type="bold">{title}</ThemedText>
+      {hint ? (
+        <ThemedText type="small" themeColor="textSecondary" style={styles.emptyHint}>
+          {hint}
+        </ThemedText>
+      ) : null}
     </View>
   );
 }
 
-type TripProps = {
-  origin: string;
-  destination: string;
-  distanceM: number;
-  durationS: number;
-  priceCents: number;
-};
-
-/** Origem, destino e os três números da corrida. */
-export function Trip({ origin, destination, distanceM, durationS, priceCents }: TripProps) {
-  return (
-    <View style={styles.trip}>
-      <View style={styles.place}>
-        <ThemedText type="small" themeColor="textSecondary">
-          Origem
-        </ThemedText>
-        <ThemedText>{origin}</ThemedText>
-      </View>
-      <View style={styles.place}>
-        <ThemedText type="small" themeColor="textSecondary">
-          Destino
-        </ThemedText>
-        <ThemedText>{destination}</ThemedText>
-      </View>
-      <View style={styles.numbers}>
-        <ThemedText type="smallBold">{formatDistance(distanceM)}</ThemedText>
-        <ThemedText type="smallBold">{formatDuration(durationS)}</ThemedText>
-        <ThemedText type="smallBold">{formatPrice(priceCents)}</ThemedText>
-      </View>
-    </View>
-  );
-}
-
-/** Dados da outra parte da corrida, com toque para ligar. */
-export function Person({ title, person }: { title: string; person: Counterpart }) {
-  const vehicle = [person.vehicle_model, person.vehicle_plate].filter(Boolean).join(' · ');
+/** A outra pessoa da corrida: iniciais, nome, veículo e botão de ligar. */
+export function PersonRow({ role, person }: { role: string; person: Counterpart }) {
+  const theme = useTheme();
 
   return (
-    <View style={styles.place}>
-      <ThemedText type="small" themeColor="textSecondary">
-        {title}
-      </ThemedText>
-      <ThemedText type="smallBold">{person.full_name}</ThemedText>
-      {vehicle ? <ThemedText>{vehicle}</ThemedText> : null}
+    <View style={styles.person}>
+      <Avatar name={person.full_name} />
+      <View style={styles.personText}>
+        <ThemedText type="small" themeColor="textSecondary">
+          {role}
+        </ThemedText>
+        <ThemedText type="bold" numberOfLines={1}>
+          {person.full_name}
+        </ThemedText>
+        {person.vehicle_model || person.vehicle_plate ? (
+          <View style={styles.vehicle}>
+            {person.vehicle_model ? (
+              <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
+                {person.vehicle_model}
+              </ThemedText>
+            ) : null}
+            {person.vehicle_plate ? <Chip>{person.vehicle_plate}</Chip> : null}
+          </View>
+        ) : null}
+      </View>
       {person.phone ? (
         <Pressable
-          accessibilityRole="link"
+          accessibilityRole="button"
+          accessibilityLabel={`Ligar para ${person.full_name}`}
           hitSlop={8}
-          onPress={() => Linking.openURL(`tel:${person.phone!.replace(/[^\d+]/g, '')}`)}>
-          <ThemedText type="linkPrimary">Ligar: {person.phone}</ThemedText>
+          onPress={() => Linking.openURL(`tel:${person.phone!.replace(/[^\d+]/g, '')}`)}
+          style={({ pressed }) => [
+            styles.call,
+            { backgroundColor: theme.backgroundElement },
+            pressed && styles.pressed,
+          ]}>
+          <Icon name="call" size={20} />
         </Pressable>
       ) : null}
     </View>
   );
 }
 
+/** Distância, tempo e valor em uma linha. */
+export function TripNumbers({
+  distanceM,
+  durationS,
+  priceCents,
+}: {
+  distanceM: number;
+  durationS: number;
+  priceCents: number;
+}) {
+  return (
+    <View style={styles.numbers}>
+      <View>
+        <ThemedText type="small" themeColor="textSecondary">
+          Distância
+        </ThemedText>
+        <ThemedText type="bold">{formatDistance(distanceM)}</ThemedText>
+      </View>
+      <View>
+        <ThemedText type="small" themeColor="textSecondary">
+          Tempo
+        </ThemedText>
+        <ThemedText type="bold">{formatDuration(durationS)}</ThemedText>
+      </View>
+      <View style={styles.price}>
+        <ThemedText type="small" themeColor="textSecondary">
+          Valor estimado
+        </ThemedText>
+        <ThemedText type="heading">{formatPrice(priceCents)}</ThemedText>
+      </View>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  card: { borderRadius: 16, padding: Spacing.four, gap: Spacing.three },
+  pressed: { opacity: 0.6 },
   centered: { alignItems: 'center', gap: Spacing.two, paddingVertical: Spacing.five },
-  badge: { alignSelf: 'flex-start', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 4 },
-  badgeLabel: { color: '#ffffff' },
-  trip: { gap: Spacing.three },
-  place: { gap: Spacing.half },
-  numbers: { flexDirection: 'row', justifyContent: 'space-between' },
+  empty: { borderRadius: 16, padding: Spacing.four, gap: Spacing.one, alignItems: 'center' },
+  emptyHint: { textAlign: 'center' },
+  person: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
+  personText: { flex: 1, gap: Spacing.half },
+  vehicle: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, marginTop: Spacing.half },
+  call: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
+  numbers: { flexDirection: 'row', alignItems: 'flex-end', gap: Spacing.four },
+  price: { marginLeft: 'auto', alignItems: 'flex-end' },
 });

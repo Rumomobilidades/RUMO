@@ -129,6 +129,16 @@ try {
   await sleep(1200);
   const quote = await app.estimateRide('Rua XV de Novembro, Blumenau SC', 'Rua Bahia, 2000, Blumenau SC');
   ok('estimateRide devolve cotação real', quote.distance_m > 500 && quote.price_cents >= 800, `${quote.distance_m} m, ${quote.price_cents} centavos`);
+  ok('cotação traz coordenadas para o mapa', Math.abs(quote.origin_lat) > 1 && Math.abs(quote.destination_lng) > 1);
+  const line = await app.fetchRouteLine(
+    { latitude: quote.origin_lat, longitude: quote.origin_lng },
+    { latitude: quote.destination_lat, longitude: quote.destination_lng },
+  );
+  ok('fetchRouteLine devolve o traçado', line.length > 5, `${line.length} pontos`);
+  await sleep(1200);
+  const gps = await app.estimateRide({ lat: -26.9187, lng: -49.0661 }, 'Rua Bahia, 2000, Blumenau SC');
+  ok('estimateRide com origem pelo GPS', gps.origin_lat === -26.9187 && gps.origin_address.length > 3 && gps.distance_m > 300, gps.origin_address);
+  ok('fetchRecentDestinations vazio antes da 1ª corrida', (await app.fetchRecentDestinations(ana.id)).length === 0);
   let ride = await app.requestRide(quote.id);
   ok('requestRide cria a corrida', ride.status === 'requested');
   ok('requestRide de novo com a mesma cotação', (await code(app.requestRide(quote.id))) === 'quote_already_used');
@@ -176,6 +186,8 @@ try {
   ana.as();
   ok('histórico do passageiro', (await app.fetchHistory(ana.id, 'passageiro')).some((r) => r.id === ride.id));
   view = await app.fetchLatestRide(ana.id, 'passageiro');
+  ok('fetchRecentDestinations depois da corrida', (await app.fetchRecentDestinations(ana.id))[0] === ride.destination_address);
+  ok('corrida traz coordenadas', typeof view?.ride.origin_lat === 'number');
   ok('passageiro vê a conclusão com dados do motorista', view?.ride.status === 'completed' && view.counterpart?.full_name === 'Dados caio');
 
   // --- cancelamento pelo passageiro depois do aceite

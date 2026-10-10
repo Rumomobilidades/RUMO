@@ -2,6 +2,7 @@ import { Link } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { BrandMark } from '@/components/brand-mark';
 import { Button, ErrorText, Field, Segmented } from '@/components/form';
 import { Screen } from '@/components/screen';
 import { ThemedText } from '@/components/themed-text';
@@ -11,8 +12,8 @@ import { supabase } from '@/lib/supabase';
 import type { Role } from '@/lib/types';
 
 const ROLES = [
-  { value: 'passageiro', label: 'Passageiro' },
-  { value: 'motorista', label: 'Motorista' },
+  { value: 'passageiro', label: 'Passageiro', icon: 'person' },
+  { value: 'motorista', label: 'Motorista', icon: 'car-sport' },
 ] as const;
 
 export default function CadastroScreen() {
@@ -69,6 +70,7 @@ export default function CadastroScreen() {
   return (
     <Screen>
       <View style={styles.header}>
+        <BrandMark />
         <ThemedText type="subtitle">Criar conta</ThemedText>
         <ThemedText themeColor="textSecondary">
           {role === 'motorista'

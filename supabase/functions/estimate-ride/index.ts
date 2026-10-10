@@ -1,6 +1,7 @@
 // estimate-ride — transforma dois endereços em uma cotação de corrida.
 //
-// O passageiro autenticado envia origem e destino em texto. A função localiza
+// O passageiro autenticado envia o destino em texto e a origem em texto ou
+// como posição do aparelho. A função localiza
 // os dois pontos, calcula a rota de carro e grava a cotação pelo RPC
 // create_ride_quote (só executável com service role), que aplica a tarifa.
 // Distância, duração e preço nunca vêm do app.
@@ -87,6 +88,38 @@ async function geocode(query: string, which: "origin" | "destination"): Promise<
   return { address: formatAddress(first.properties) || query, lat, lng }
 }
 
+/** Ponto vindo do GPS do aparelho: descobre o endereço mais próximo para exibir. */
+async function reverseGeocode(lat: number, lng: number): Promise<Place> {
+  const url = new URL("https://photon.komoot.io/reverse")
+  url.searchParams.set("lat", String(lat))
+  url.searchParams.set("lon", String(lng))
+
+  const response = await fetch(url, {
+    headers: { "User-Agent": USER_AGENT },
+    signal: AbortSignal.timeout(10_000),
+  }).catch(() => null)
+
+  if (!response?.ok) {
+    throw new EstimateError("maps_unavailable", 502, `reverse:${response?.status ?? "sem resposta"}`)
+  }
+
+  const data = (await response.json()) as { features?: PhotonFeature[] }
+  const first = data.features?.[0]
+  if (first && first.properties.countrycode !== "BR") throw new EstimateError("origin_not_found", 422)
+
+  // As coordenadas do aparelho valem mais que as do endereço encontrado.
+  return { address: (first && formatAddress(first.properties)) || "Localização atual", lat, lng }
+}
+
+function readCoords(value: unknown): { lat: number; lng: number } | null {
+  if (!value || typeof value !== "object") return null
+  const { lat, lng } = value as { lat?: unknown; lng?: unknown }
+  if (typeof lat !== "number" || typeof lng !== "number") return null
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
+  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null
+  return { lat, lng }
+}
+
 async function route(from: Place, to: Place): Promise<{ distanceM: number; durationS: number }> {
   const coords = `${from.lng},${from.lat};${to.lng},${to.lat}`
   const response = await fetch(
@@ -133,11 +166,14 @@ Deno.serve(async (request) => {
     if (authError || !auth.user) throw new EstimateError("not_authenticated", 401)
 
     const body = await request.json().catch(() => null)
-    const originText = readAddress(body?.origin, "origin")
+    // A origem pode ser um endereço digitado ou a posição do aparelho ({ lat, lng }).
+    const originCoords = readCoords(body?.origin)
     const destinationText = readAddress(body?.destination, "destination")
 
     // Em sequência, para não pressionar o servidor público de endereços.
-    const origin = await geocode(originText, "origin")
+    const origin = originCoords
+      ? await reverseGeocode(originCoords.lat, originCoords.lng)
+      : await geocode(readAddress(body?.origin, "origin"), "origin")
     const destination = await geocode(destinationText, "destination")
     const { distanceM, durationS } = await route(origin, destination)
 

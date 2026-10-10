@@ -1,34 +1,44 @@
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * Sistema visual do RUMO no app. Mesma família da landing: tinta quase preta,
+ * verde da marca e lima como destaque. Ações principais são em tinta (preto no
+ * claro, branco no escuro); o verde fica para estado e mapa.
  */
 
 import '@/global.css';
 
 import { Platform } from 'react-native';
 
-export const Colors = {
-  light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
-  },
-  dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
-  },
-} as const;
-
-/** Cores da marca RUMO (mesmo verde da landing). */
 export const Brand = {
+  ink: '#101613',
   green: '#0E8A45',
+  greenSoft: '#E7F5EC',
   lime: '#BEE83E',
   danger: '#D92D20',
+  warning: '#B54708',
+} as const;
+
+export const Colors = {
+  light: {
+    text: '#101613',
+    background: '#ffffff',
+    backgroundElement: '#F2F4F3',
+    backgroundSelected: '#E4E8E5',
+    textSecondary: '#5B6660',
+    border: '#E4E8E5',
+    /** Fundo e texto do botão principal. */
+    action: '#101613',
+    onAction: '#ffffff',
+  },
+  dark: {
+    text: '#F2F5F2',
+    background: '#101613',
+    backgroundElement: '#1B231E',
+    backgroundSelected: '#28322C',
+    textSecondary: '#9AA69E',
+    border: '#28322C',
+    action: '#F2F5F2',
+    onAction: '#101613',
+  },
 } as const;
 
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
@@ -68,5 +78,17 @@ export const Spacing = {
   six: 64,
 } as const;
 
-export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
+export const Radius = { small: 10, medium: 14, large: 20, sheet: 28, pill: 999 } as const;
+
+/** Sombra de elementos que flutuam sobre o mapa. */
+export const Elevation = Platform.select({
+  ios: {
+    shadowColor: '#000000',
+    shadowOpacity: 0.16,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 },
+  },
+  default: { elevation: 10 },
+});
+
 export const MaxContentWidth = 800;

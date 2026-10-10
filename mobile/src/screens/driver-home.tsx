@@ -1,10 +1,26 @@
 import { useCallback, useState } from 'react';
-import { Alert } from 'react-native';
+import { Alert, KeyboardAvoidingView, StyleSheet, View } from 'react-native';
 
+import { AccountMenu } from '@/components/account-menu';
 import { Button, ErrorText, Field } from '@/components/form';
-import { Card, Empty, Loading, Person, StatusBadge, Trip } from '@/components/ride';
+import { MapScreen } from '@/components/map-screen';
+import { Empty, Loading, PersonRow, TripNumbers } from '@/components/ride';
 import { ThemedText } from '@/components/themed-text';
+import {
+  BottomModal,
+  Divider,
+  FloatingButton,
+  Icon,
+  RouteSummary,
+  Row,
+  SearchingBar,
+  StepBar,
+} from '@/components/ui';
+import { Brand, Elevation, Radius, Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import { describeError } from '@/lib/errors';
+import { formatPrice } from '@/lib/format';
+import { useMyLocation } from '@/lib/location';
 import { endedRecently, isActive, statusLabel } from '@/lib/ride-labels';
 import {
   acceptRide,
@@ -16,22 +32,30 @@ import {
   setDriverOnline,
   updateVehicle,
 } from '@/lib/rides';
-import type { Driver, Ride, RideView } from '@/lib/types';
+import type { Driver, Profile, Ride, RideView } from '@/lib/types';
 import { useLive } from '@/lib/use-live';
+import { ridePoints, useRouteLine } from '@/lib/use-route-line';
 import { RideSummary } from '@/screens/ride-summary';
-
-const APPROVAL_TEXT: Record<Driver['approval_status'], string> = {
-  pending: 'Cadastro em análise. Você poderá ficar online depois da aprovação.',
-  approved: 'Cadastro aprovado.',
-  rejected: 'Cadastro não aprovado. Fale com o suporte.',
-};
 
 /** Próximo passo permitido pelo banco a partir de cada estado. */
 const NEXT_STEP = {
-  accepted: { to: 'arrived', label: 'Cheguei ao local' },
-  arrived: { to: 'in_progress', label: 'Iniciar viagem' },
-  in_progress: { to: 'completed', label: 'Finalizar viagem' },
+  accepted: { to: 'arrived', label: 'Cheguei ao local', hint: 'Vá até o ponto de embarque.' },
+  arrived: { to: 'in_progress', label: 'Iniciar viagem', hint: 'Aguarde o passageiro embarcar.' },
+  in_progress: { to: 'completed', label: 'Finalizar viagem', hint: 'Leve o passageiro ao destino.' },
 } as const;
+
+const STEP: Record<string, number> = { accepted: 1, arrived: 2, in_progress: 3 };
+
+function StatusPill({ online }: { online: boolean }) {
+  const theme = useTheme();
+
+  return (
+    <View style={[styles.pill, Elevation, { backgroundColor: theme.background }]}>
+      <View style={[styles.pillDot, { backgroundColor: online ? Brand.green : theme.textSecondary }]} />
+      <ThemedText type="smallBold">{online ? 'Online' : 'Offline'}</ThemedText>
+    </View>
+  );
+}
 
 function ActiveRide({ view, onChanged }: { view: RideView; onChanged: () => Promise<void> }) {
   const { ride, counterpart } = view;
@@ -61,16 +85,32 @@ function ActiveRide({ view, onChanged }: { view: RideView; onChanged: () => Prom
   }
 
   return (
-    <Card>
-      <StatusBadge status={ride.status} label={statusLabel(ride.status, 'motorista')} />
-      {counterpart ? <Person title="Passageiro" person={counterpart} /> : null}
-      <Trip
-        origin={ride.origin_address}
-        destination={ride.destination_address}
+    <>
+      <View style={styles.titleBlock}>
+        <ThemedText type="heading">{statusLabel(ride.status, 'motorista')}</ThemedText>
+        {step ? (
+          <ThemedText type="small" themeColor="textSecondary">
+            {step.hint}
+          </ThemedText>
+        ) : null}
+      </View>
+      <StepBar total={3} current={STEP[ride.status] ?? 0} />
+
+      {counterpart ? (
+        <>
+          <PersonRow role="Passageiro" person={counterpart} />
+          <Divider />
+        </>
+      ) : null}
+
+      <RouteSummary origin={ride.origin_address} destination={ride.destination_address} />
+      <Divider />
+      <TripNumbers
         distanceM={ride.distance_m}
         durationS={ride.duration_s}
         priceCents={ride.estimated_price_cents}
       />
+
       <ErrorText>{error}</ErrorText>
       {step ? (
         <Button label={step.label} busy={busy} onPress={() => act(() => advanceRide(ride.id, step.to))} />
@@ -78,14 +118,140 @@ function ActiveRide({ view, onChanged }: { view: RideView; onChanged: () => Prom
       {cancellable ? (
         <Button label="Cancelar corrida" variant="danger" disabled={busy} onPress={confirmCancel} />
       ) : null}
-    </Card>
+    </>
   );
 }
 
-function Requests({ onAccepted }: { onAccepted: () => Promise<void> }) {
-  const live = useLive(fetchOpenRequests, 5000);
+function RequestCard({
+  ride,
+  busy,
+  blocked,
+  onAccept,
+}: {
+  ride: Ride;
+  busy: boolean;
+  blocked: boolean;
+  onAccept: () => void;
+}) {
+  const theme = useTheme();
+
+  return (
+    <View style={[styles.request, { borderColor: theme.border }]}>
+      <View style={styles.requestHeader}>
+        <ThemedText type="subtitle">{formatPrice(ride.estimated_price_cents)}</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          valor estimado
+        </ThemedText>
+      </View>
+      <RouteSummary origin={ride.origin_address} destination={ride.destination_address} />
+      <TripNumbers
+        distanceM={ride.distance_m}
+        durationS={ride.duration_s}
+        priceCents={ride.estimated_price_cents}
+      />
+      <Button label="Aceitar corrida" variant="brand" busy={busy} disabled={blocked} onPress={onAccept} />
+    </View>
+  );
+}
+
+function VehicleModal({
+  driver,
+  visible,
+  onClose,
+  onSaved,
+}: {
+  driver: Driver;
+  visible: boolean;
+  onClose: () => void;
+  onSaved: () => Promise<void>;
+}) {
+  const [model, setModel] = useState(driver.vehicle_model ?? '');
+  const [plate, setPlate] = useState(driver.vehicle_plate ?? '');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function save() {
+    setError(null);
+    setBusy(true);
+    try {
+      await updateVehicle(driver.id, model, plate);
+      await onSaved();
+      onClose();
+    } catch (e) {
+      setError(describeError(e));
+    }
+    setBusy(false);
+  }
+
+  return (
+    <BottomModal visible={visible} onClose={onClose}>
+      <KeyboardAvoidingView behavior="padding" style={styles.modalBody}>
+        <ThemedText type="heading">Seu veículo</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          O passageiro vê estes dados depois que você aceita a corrida.
+        </ThemedText>
+        <Field label="Modelo e cor" value={model} onChangeText={setModel} placeholder="Onix prata" />
+        <Field
+          label="Placa"
+          value={plate}
+          onChangeText={setPlate}
+          placeholder="ABC1D23"
+          autoCapitalize="characters"
+          maxLength={8}
+        />
+        <ErrorText>{error}</ErrorText>
+        <Button label="Salvar" onPress={save} busy={busy} />
+      </KeyboardAvoidingView>
+    </BottomModal>
+  );
+}
+
+export function DriverHome({ profile }: { profile: Profile }) {
+  const userId = profile.id;
+  const driverFetcher = useCallback(() => fetchDriver(userId), [userId]);
+  const rideFetcher = useCallback(() => fetchLatestRide(userId, 'motorista'), [userId]);
+  // A aprovação muda fora do app (dashboard), então o cadastro também é consultado em intervalo.
+  const driverLive = useLive(driverFetcher, 15000);
+  const rideLive = useLive(rideFetcher);
+  const location = useMyLocation();
+
+  const driver = driverLive.data ?? null;
+  const view = rideLive.data ?? null;
+  const active = view && isActive(view.ride) ? view : null;
+
+  const [dismissedId, setDismissedId] = useState<string | null>(null);
+  const summary = view && !active && endedRecently(view.ride) && view.ride.id !== dismissedId ? view : null;
+
+  const approved = driver?.approval_status === 'approved';
+  const listening = Boolean(approved && driver?.is_online && !active && !summary);
+  const requests = useLive(listening ? fetchOpenRequests : null, 5000);
+  const openRides = listening ? (requests.data ?? []) : [];
+
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [vehicleOpen, setVehicleOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const points = ridePoints(active?.ride ?? summary?.ride ?? openRides[0] ?? null);
+  const line = useRouteLine(points.origin, points.destination);
+
+  const refreshAll = useCallback(async () => {
+    await Promise.all([driverLive.refresh(), rideLive.refresh(), requests.refresh()]);
+  }, [driverLive, rideLive, requests]);
+
+  async function toggleOnline() {
+    if (!driver) return;
+    setError(null);
+    setBusy(true);
+    try {
+      await setDriverOnline(!driver.is_online);
+    } catch (e) {
+      setError(describeError(e));
+    }
+    await refreshAll();
+    setBusy(false);
+  }
 
   async function accept(ride: Ride) {
     setError(null);
@@ -96,188 +262,175 @@ function Requests({ onAccepted }: { onAccepted: () => Promise<void> }) {
     } catch (e) {
       setError(describeError(e));
     }
-    await Promise.all([live.refresh(), onAccepted()]);
+    await refreshAll();
     setAcceptingId(null);
   }
 
-  if (live.loading) return <Loading label="Buscando solicitações" />;
+  let sheet;
 
-  const rides = live.data ?? [];
-
-  return (
-    <>
-      <ThemedText type="smallBold">Solicitações disponíveis</ThemedText>
-      <ErrorText>{error ?? live.error}</ErrorText>
-      {rides.length === 0 ? (
-        <Empty
-          title="Nenhuma solicitação no momento"
-          hint="Esta lista atualiza sozinha quando um passageiro pedir uma corrida."
-        />
-      ) : (
-        rides.map((ride) => (
-          <Card key={ride.id}>
-            <Trip
-              origin={ride.origin_address}
-              destination={ride.destination_address}
-              distanceM={ride.distance_m}
-              durationS={ride.duration_s}
-              priceCents={ride.estimated_price_cents}
-            />
-            <Button
-              label="Aceitar corrida"
-              busy={acceptingId === ride.id}
-              disabled={acceptingId !== null}
-              onPress={() => accept(ride)}
-            />
-          </Card>
-        ))
-      )}
-    </>
-  );
-}
-
-function Vehicle({ driver, onSaved }: { driver: Driver; onSaved: () => Promise<void> }) {
-  const [model, setModel] = useState(driver.vehicle_model ?? '');
-  const [plate, setPlate] = useState(driver.vehicle_plate ?? '');
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  async function save() {
-    setError(null);
-    setMessage(null);
-    setBusy(true);
-    try {
-      await updateVehicle(driver.id, model, plate);
-      await onSaved();
-      setMessage('Veículo salvo.');
-    } catch (e) {
-      setError(describeError(e));
-    }
-    setBusy(false);
-  }
-
-  return (
-    <Card>
-      <ThemedText type="smallBold">Seu veículo</ThemedText>
-      <ThemedText type="small" themeColor="textSecondary">
-        O passageiro vê estes dados depois que você aceita a corrida.
-      </ThemedText>
-      <Field label="Modelo e cor" value={model} onChangeText={setModel} placeholder="Onix prata" />
-      <Field
-        label="Placa"
-        value={plate}
-        onChangeText={setPlate}
-        placeholder="ABC1D23"
-        autoCapitalize="characters"
-        maxLength={8}
-      />
-      <ErrorText>{error}</ErrorText>
-      {message ? <ThemedText type="small">{message}</ThemedText> : null}
-      <Button label="Salvar veículo" variant="secondary" onPress={save} busy={busy} />
-    </Card>
-  );
-}
-
-export function useDriverHome(userId: string) {
-  const driverFetcher = useCallback(() => fetchDriver(userId), [userId]);
-  const rideFetcher = useCallback(() => fetchLatestRide(userId, 'motorista'), [userId]);
-  // A aprovação muda fora do app (dashboard), então o cadastro também é consultado em intervalo.
-  const driver = useLive(driverFetcher, 15000);
-  const ride = useLive(rideFetcher);
-
-  const refresh = useCallback(async () => {
-    await Promise.all([driver.refresh(), ride.refresh()]);
-  }, [driver, ride]);
-
-  return { driver, ride, refresh, refreshing: driver.refreshing || ride.refreshing };
-}
-
-export function DriverHome({
-  userId,
-  live,
-}: {
-  userId: string;
-  live: ReturnType<typeof useDriverHome>;
-}) {
-  const [dismissedId, setDismissedId] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  if (live.driver.loading || live.ride.loading) return <Loading label="Carregando seu painel" />;
-
-  const driver = live.driver.data;
-  const view = live.ride.data;
-
-  if (!driver) {
-    return (
+  if (driverLive.loading || rideLive.loading) {
+    sheet = <Loading label="Carregando seu painel" />;
+  } else if (!driver) {
+    sheet = (
       <>
-        <ErrorText>{live.driver.error ?? 'Cadastro de motorista não encontrado.'}</ErrorText>
-        <Button label="Tentar de novo" variant="secondary" onPress={live.refresh} />
+        <ErrorText>{driverLive.error ?? 'Cadastro de motorista não encontrado.'}</ErrorText>
+        <Button label="Tentar de novo" variant="secondary" onPress={refreshAll} />
+      </>
+    );
+  } else if (active) {
+    sheet = (
+      <>
+        <ErrorText>{rideLive.error}</ErrorText>
+        <ActiveRide view={active} onChanged={refreshAll} />
+      </>
+    );
+  } else if (summary) {
+    sheet = (
+      <RideSummary
+        view={summary}
+        role="motorista"
+        userId={userId}
+        doneLabel="Voltar às solicitações"
+        onDone={() => setDismissedId(summary.ride.id)}
+      />
+    );
+  } else if (!approved) {
+    const rejected = driver.approval_status === 'rejected';
+    sheet = (
+      <>
+        <View style={styles.notice}>
+          <Icon
+            name={rejected ? 'close-circle' : 'hourglass'}
+            size={36}
+            color={rejected ? Brand.danger : Brand.warning}
+          />
+          <View style={styles.noticeText}>
+            <ThemedText type="heading">{rejected ? 'Cadastro não aprovado' : 'Cadastro em análise'}</ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              {rejected
+                ? 'Fale com o suporte do RUMO para entender o motivo.'
+                : 'Assim que seu cadastro for aprovado, você poderá ficar online. Esta tela atualiza sozinha.'}
+            </ThemedText>
+          </View>
+        </View>
+        <Row
+          icon="car-outline"
+          title="Meu veículo"
+          subtitle={driver.vehicle_plate ?? 'Adicione modelo e placa'}
+          onPress={() => setVehicleOpen(true)}
+        />
+        <Button label="Atualizar situação" variant="secondary" onPress={refreshAll} />
+      </>
+    );
+  } else if (!driver.is_online) {
+    sheet = (
+      <>
+        <View style={styles.titleBlock}>
+          <ThemedText type="heading">Você está offline</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            Fique online para receber solicitações de corrida.
+          </ThemedText>
+        </View>
+        <ErrorText>{error ?? driverLive.error}</ErrorText>
+        <Button label="Ficar online" variant="brand" icon="power" onPress={toggleOnline} busy={busy} />
+        <Row
+          icon="car-outline"
+          title="Meu veículo"
+          subtitle={
+            [driver.vehicle_model, driver.vehicle_plate].filter(Boolean).join(' · ') ||
+            'Adicione modelo e placa'
+          }
+          onPress={() => setVehicleOpen(true)}
+        />
+      </>
+    );
+  } else {
+    sheet = (
+      <>
+        <View style={styles.titleBlock}>
+          <ThemedText type="heading">
+            {openRides.length > 0
+              ? openRides.length === 1
+                ? 'Nova solicitação'
+                : `${openRides.length} solicitações`
+              : 'Procurando corridas'}
+          </ThemedText>
+          {openRides.length === 0 ? (
+            <ThemedText type="small" themeColor="textSecondary">
+              Você está online. As solicitações aparecem aqui sozinhas.
+            </ThemedText>
+          ) : null}
+        </View>
+        <ErrorText>{error ?? requests.error}</ErrorText>
+        {requests.loading ? (
+          <Loading label="Buscando solicitações" />
+        ) : openRides.length === 0 ? (
+          <>
+            <SearchingBar />
+            <Empty title="Nenhuma solicitação no momento" hint="Deixe o app aberto para não perder corridas." />
+          </>
+        ) : (
+          openRides.map((ride) => (
+            <RequestCard
+              key={ride.id}
+              ride={ride}
+              busy={acceptingId === ride.id}
+              blocked={acceptingId !== null}
+              onAccept={() => accept(ride)}
+            />
+          ))
+        )}
+        <Button label="Ficar offline" variant="secondary" onPress={toggleOnline} busy={busy} />
       </>
     );
   }
 
-  async function toggleOnline() {
-    setError(null);
-    setBusy(true);
-    try {
-      await setDriverOnline(!driver!.is_online);
-    } catch (e) {
-      setError(describeError(e));
-    }
-    await live.refresh();
-    setBusy(false);
-  }
-
-  const approved = driver.approval_status === 'approved';
-  const active = view && isActive(view.ride) ? view : null;
-  const summary = view && !active && endedRecently(view.ride) && view.ride.id !== dismissedId ? view : null;
-
   return (
     <>
-      <ErrorText>{live.driver.error ?? live.ride.error}</ErrorText>
-
-      {active ? (
-        <ActiveRide view={active} onChanged={live.refresh} />
-      ) : summary ? (
-        <RideSummary
-          view={summary}
-          role="motorista"
-          userId={userId}
-          doneLabel="Voltar às solicitações"
-          onDone={() => setDismissedId(summary.ride.id)}
+      <MapScreen
+        origin={points.origin}
+        destination={points.destination}
+        line={line}
+        me={location.coords}
+        showsUser={location.status === 'granted'}
+        top={
+          <>
+            <FloatingButton icon="person" label="Abrir menu da conta" onPress={() => setMenuOpen(true)} />
+            {driver && approved ? <StatusPill online={driver.is_online} /> : null}
+            <View style={styles.topSpacer} />
+          </>
+        }>
+        {sheet}
+      </MapScreen>
+      <AccountMenu profile={profile} visible={menuOpen} onClose={() => setMenuOpen(false)} />
+      {driver ? (
+        <VehicleModal
+          key={`${driver.vehicle_model}|${driver.vehicle_plate}`}
+          driver={driver}
+          visible={vehicleOpen}
+          onClose={() => setVehicleOpen(false)}
+          onSaved={refreshAll}
         />
       ) : null}
-
-      {!active ? (
-        <Card>
-          <ThemedText type="smallBold">Situação</ThemedText>
-          <ThemedText themeColor="textSecondary">{APPROVAL_TEXT[driver.approval_status]}</ThemedText>
-          {approved ? (
-            <>
-              <ThemedText>
-                {driver.is_online
-                  ? 'Você está online e pode receber corridas.'
-                  : 'Você está offline e não recebe corridas.'}
-              </ThemedText>
-              <Button
-                label={driver.is_online ? 'Ficar offline' : 'Ficar online'}
-                variant={driver.is_online ? 'secondary' : 'primary'}
-                onPress={toggleOnline}
-                busy={busy}
-              />
-            </>
-          ) : null}
-          <ErrorText>{error}</ErrorText>
-        </Card>
-      ) : null}
-
-      {approved && driver.is_online && !active && !summary ? (
-        <Requests onAccepted={live.refresh} />
-      ) : null}
-
-      {!active && !driver.is_online ? <Vehicle driver={driver} onSaved={live.refresh} /> : null}
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  titleBlock: { gap: Spacing.one },
+  pill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    borderRadius: Radius.pill,
+    paddingHorizontal: Spacing.three,
+    height: 40,
+  },
+  pillDot: { width: 10, height: 10, borderRadius: 5 },
+  topSpacer: { width: 48 },
+  notice: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
+  noticeText: { flex: 1, gap: Spacing.one },
+  request: { borderWidth: 1, borderRadius: Radius.large, padding: Spacing.three, gap: Spacing.three },
+  requestHeader: { flexDirection: 'row', alignItems: 'baseline', gap: Spacing.two },
+  modalBody: { gap: Spacing.three, paddingBottom: Spacing.two },
+});
