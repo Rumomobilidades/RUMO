@@ -11,3 +11,8 @@ port = 54321
 [studio]
 enabled = true
 port = 54323
+
+# A função valida o token do usuário por conta própria (auth.getUser), o que
+# funciona tanto com as chaves novas quanto com as legadas.
+[functions.estimate-ride]
+verify_jwt = false

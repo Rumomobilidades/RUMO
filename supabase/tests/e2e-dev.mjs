@@ -141,24 +141,75 @@ try {
   }
   ok("motoristas aprovados ficam online", true)
 
-  // --- cotação criada pelo servidor
-  r = await admin.rpc("create_ride_quote", {
-    p_passenger_id: ana.id,
-    p_origin_address: "Rua XV de Novembro, 100 - Blumenau",
-    p_origin_lat: -26.9194,
-    p_origin_lng: -49.0661,
-    p_destination_address: "Rua 7 de Setembro, 1213 - Blumenau",
-    p_destination_lat: -26.9167,
-    p_destination_lng: -49.071,
-    p_distance_m: 8200,
-    p_duration_s: 900,
+  // --- estimativa real: Edge Function (endereço -> rota -> cotação)
+  const estimate = (client, body) => client.functions.invoke("estimate-ride", { body })
+  const errorCode = async (res) =>
+    res.error ? (await res.error.context?.json?.().catch(() => null))?.error : null
+
+  r = await newClient().functions.invoke("estimate-ride", {
+    body: {
+      origin: "Rua XV de Novembro, Blumenau",
+      destination: "Rua 7 de Setembro, Blumenau",
+    },
   })
-  const quote = r.data
   ok(
-    "servidor cria cotação com preço calculado",
-    quote?.price_cents === 2326,
-    r.error?.message ?? String(quote?.price_cents)
+    "estimativa exige login",
+    (await errorCode(r)) === "not_authenticated",
+    await errorCode(r)
   )
+  r = await estimate(caio.client, {
+    origin: "Rua XV de Novembro, Blumenau",
+    destination: "Rua 7 de Setembro, Blumenau",
+  })
+  ok(
+    "motorista não pede estimativa",
+    (await errorCode(r)) === "not_a_passenger",
+    await errorCode(r)
+  )
+  await sleep(1200)
+  r = await estimate(ana.client, {
+    origin: "zzqx endereço inexistente 99999 qwxz",
+    destination: "Rua 7 de Setembro, Blumenau",
+  })
+  ok(
+    "endereço inexistente é recusado",
+    (await errorCode(r)) === "origin_not_found",
+    await errorCode(r)
+  )
+  await sleep(1200)
+  r = await estimate(ana.client, {
+    origin: "Rua XV de Novembro, 100, Blumenau SC",
+    destination: "Rua Bahia, 2000, Blumenau SC",
+  })
+  const quote = r.data?.quote
+  const expected =
+    quote &&
+    Math.max(
+      800,
+      400 +
+        Math.round((180 * quote.distance_m) / 1000) +
+        Math.round((30 * quote.duration_s) / 60)
+    )
+  ok(
+    "estimativa com rota real e preço calculado no servidor",
+    Boolean(quote) &&
+      quote.distance_m > 500 &&
+      quote.duration_s > 30 &&
+      quote.price_cents === expected,
+    quote
+      ? `${quote.distance_m} m, ${quote.duration_s} s, ${quote.price_cents} centavos`
+      : await errorCode(r)
+  )
+  if (!quote) throw new Error("sem cotação")
+
+  // --- Realtime: motorista online escuta solicitações novas
+  const driverSeen = []
+  const driverChannel = davi.client
+    .channel("requests-e2e")
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "rides" }, (p) =>
+      driverSeen.push(p.new.id)
+    )
+    .subscribe()
 
   // --- Realtime: passageiro escuta a própria corrida
   const seen = []
@@ -187,7 +238,7 @@ try {
   const ride = r.data
   ok(
     "passageiro pede a corrida",
-    ride?.status === "requested" && ride?.estimated_price_cents === 2326,
+    ride?.status === "requested" && ride?.estimated_price_cents === quote.price_cents,
     r.error?.message
   )
   r = await caio.client.from("rides").select("id").eq("status", "requested")
@@ -196,6 +247,14 @@ try {
     r.data?.some((x) => x.id === ride.id),
     r.error?.message
   )
+
+  await sleep(2500)
+  ok(
+    "Realtime avisa o motorista online da nova solicitação",
+    driverSeen.includes(ride.id),
+    `${driverSeen.length} eventos`
+  )
+  await davi.client.removeChannel(driverChannel)
 
   // --- disputa REAL: dois motoristas aceitam ao mesmo tempo
   const [a, b] = await Promise.all([
