@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -11,15 +12,32 @@ import { ThemedText } from '@/components/themed-text';
 import { Brand, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
-export function Field({ label, ...props }: TextInputProps & { label: string }) {
+export function Field({ label, secureTextEntry, ...props }: TextInputProps & { label: string }) {
   const theme = useTheme();
+  // Campo de senha ganha "Mostrar": dá para conferir o que foi digitado (ou
+  // preenchido sozinho pelo teclado) antes de enviar.
+  const [revealed, setRevealed] = useState(false);
 
   return (
     <View style={styles.field}>
-      <ThemedText type="smallBold">{label}</ThemedText>
+      <View style={styles.fieldHeader}>
+        <ThemedText type="smallBold">{label}</ThemedText>
+        {secureTextEntry ? (
+          <Pressable
+            accessibilityRole="button"
+            hitSlop={12}
+            onPress={() => setRevealed((value) => !value)}>
+            <ThemedText type="small" themeColor="textSecondary">
+              {revealed ? 'Ocultar' : 'Mostrar'}
+            </ThemedText>
+          </Pressable>
+        ) : null}
+      </View>
       <TextInput
+        accessibilityLabel={label}
         placeholderTextColor={theme.textSecondary}
         style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
+        secureTextEntry={secureTextEntry && !revealed}
         {...props}
       />
     </View>
@@ -31,7 +49,7 @@ type ButtonProps = {
   onPress: () => void;
   busy?: boolean;
   disabled?: boolean;
-  variant?: 'primary' | 'secondary';
+  variant?: 'primary' | 'secondary' | 'danger';
 };
 
 export function Button({ label, onPress, busy, disabled, variant = 'primary' }: ButtonProps) {
@@ -47,13 +65,16 @@ export function Button({ label, onPress, busy, disabled, variant = 'primary' }: 
       onPress={onPress}
       style={({ pressed }) => [
         styles.button,
-        { backgroundColor: primary ? Brand.green : theme.backgroundElement },
+        { backgroundColor: primary ? Brand.green : theme.backgroundSelected },
+        variant === 'danger' && styles.dangerButton,
         (pressed || blocked) && styles.dimmed,
       ]}>
       {busy ? (
         <ActivityIndicator color={primary ? '#ffffff' : theme.text} />
       ) : (
-        <ThemedText type="smallBold" style={primary ? styles.primaryLabel : undefined}>
+        <ThemedText
+          type="smallBold"
+          style={primary ? styles.primaryLabel : variant === 'danger' ? styles.error : undefined}>
           {label}
         </ThemedText>
       )}
@@ -102,6 +123,7 @@ export function ErrorText({ children }: { children: string | null }) {
 
 const styles = StyleSheet.create({
   field: { gap: Spacing.two },
+  fieldHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   input: {
     borderRadius: 12,
     paddingHorizontal: Spacing.three,
@@ -115,6 +137,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: Spacing.three,
   },
+  dangerButton: { backgroundColor: 'transparent', borderWidth: 1, borderColor: Brand.danger },
   dimmed: { opacity: 0.6 },
   primaryLabel: { color: '#ffffff' },
   segmented: { flexDirection: 'row', borderRadius: 14, padding: Spacing.one, gap: Spacing.one },

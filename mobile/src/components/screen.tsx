@@ -1,22 +1,33 @@
 import type { ReactNode } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
+import { KeyboardAvoidingView, RefreshControl, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedView } from '@/components/themed-view';
-import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { Brand, MaxContentWidth, Spacing } from '@/constants/theme';
+
+type ScreenProps = {
+  children: ReactNode;
+  /** Liga o "puxar para atualizar". */
+  onRefresh?: () => void;
+  refreshing?: boolean;
+};
 
 /** Moldura padrão de tela: área segura, rolagem e teclado sem cobrir os campos. */
-export function Screen({ children }: { children: ReactNode }) {
+export function Screen({ children, onRefresh, refreshing = false }: ScreenProps) {
   return (
     <ThemedView style={styles.fill}>
       <SafeAreaView style={styles.fill}>
-        <KeyboardAvoidingView
-          style={styles.fill}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        {/* "padding" nas duas plataformas: no Android de ponta a ponta a janela não encolhe sozinha. */}
+        <KeyboardAvoidingView style={styles.fill} behavior="padding">
           <ScrollView
             contentContainerStyle={styles.content}
             keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}>
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              onRefresh ? (
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Brand.green} />
+              ) : undefined
+            }>
             {children}
           </ScrollView>
         </KeyboardAvoidingView>

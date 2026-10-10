@@ -13,6 +13,16 @@ const RULE_MESSAGES: Record<string, string> = {
   ride_not_found: 'Corrida não encontrada.',
   invalid_transition: 'Essa ação não é possível no estado atual da corrida.',
   ride_not_cancellable: 'Essa corrida não pode mais ser cancelada.',
+  // Códigos da Edge Function estimate-ride.
+  origin_required: 'Informe o endereço de origem.',
+  destination_required: 'Informe o endereço de destino.',
+  origin_not_found: 'Não encontramos o endereço de origem. Inclua rua, número e cidade.',
+  destination_not_found: 'Não encontramos o endereço de destino. Inclua rua, número e cidade.',
+  route_not_found: 'Não encontramos uma rota de carro entre esses endereços.',
+  route_too_short: 'Origem e destino estão próximos demais.',
+  route_too_long: 'Essa distância está acima do limite atendido.',
+  maps_unavailable: 'O serviço de mapas não respondeu. Tente de novo em instantes.',
+  internal_error: 'Erro no servidor. Tente novamente.',
 };
 
 const AUTH_MESSAGES: Record<string, string> = {
