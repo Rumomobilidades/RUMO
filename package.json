@@ -9,7 +9,8 @@
     "lint": "eslint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test:db": "node supabase/tests/rides.test.mjs"
+    "test:db": "node supabase/tests/rides.test.mjs",
+    "test:e2e": "node supabase/tests/e2e-dev.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "5.4.0",
