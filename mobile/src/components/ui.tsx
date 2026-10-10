@@ -216,7 +216,11 @@ export function Row({
           </ThemedText>
         ) : null}
       </View>
-      {trailing ?? (onPress ? <Icon name="chevron-forward" size={18} color={theme.textSecondary} /> : null)}
+      {trailing !== undefined ? (
+        trailing
+      ) : onPress ? (
+        <Icon name="chevron-forward" size={18} color={theme.textSecondary} />
+      ) : null}
     </Pressable>
   );
 }

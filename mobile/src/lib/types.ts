@@ -37,6 +37,13 @@ export const ACTIVE_STATUSES: readonly RideStatus[] = [
 
 export type LatLng = { latitude: number; longitude: number };
 
+/** Um lugar escolhido: coordenadas + o texto mostrado para a pessoa. */
+export type PlaceRef = { label: string; lat: number; lng: number };
+
+export type PlaceSuggestion = { id: string; title: string; subtitle: string; lat: number; lng: number };
+
+export type RideCategory = { id: string; name: string; description: string | null; seats: number };
+
 export type Quote = {
   id: string;
   origin_address: string;
@@ -49,12 +56,17 @@ export type Quote = {
   duration_s: number;
   price_cents: number;
   expires_at: string;
+  category_id: string;
 };
+
+/** Uma cotação já acompanhada dos dados da sua categoria. */
+export type QuoteOption = Quote & { category: RideCategory };
 
 export type Ride = {
   id: string;
   passenger_id: string;
   driver_id: string | null;
+  category_id: string;
   origin_address: string;
   origin_lat: number;
   origin_lng: number;

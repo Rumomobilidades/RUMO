@@ -22,6 +22,9 @@ const RULE_MESSAGES: Record<string, string> = {
   route_too_short: 'Origem e destino estão próximos demais.',
   route_too_long: 'Essa distância está acima do limite atendido.',
   maps_unavailable: 'O serviço de mapas não respondeu. Tente de novo em instantes.',
+  query_too_short: 'Digite pelo menos 3 letras.',
+  no_categories: 'Nenhuma categoria de viagem disponível no momento.',
+  category_not_found: 'Essa categoria não está mais disponível.',
   internal_error: 'Erro no servidor. Tente novamente.',
 };
 

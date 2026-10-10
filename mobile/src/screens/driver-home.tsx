@@ -19,12 +19,14 @@ import {
 import { Brand, Elevation, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { describeError } from '@/lib/errors';
-import { formatPrice } from '@/lib/format';
+import { formatDistance, formatDuration, formatPrice } from '@/lib/format';
 import { useMyLocation } from '@/lib/location';
+import { useNewRequestAlert, useRideAlerts } from '@/lib/notifications';
 import { endedRecently, isActive, statusLabel } from '@/lib/ride-labels';
 import {
   acceptRide,
   advanceRide,
+  declineRide,
   cancelRide,
   fetchDriver,
   fetchLatestRide,
@@ -127,11 +129,13 @@ function RequestCard({
   busy,
   blocked,
   onAccept,
+  onDecline,
 }: {
   ride: Ride;
   busy: boolean;
   blocked: boolean;
   onAccept: () => void;
+  onDecline: () => void;
 }) {
   const theme = useTheme();
 
@@ -140,16 +144,18 @@ function RequestCard({
       <View style={styles.requestHeader}>
         <ThemedText type="subtitle">{formatPrice(ride.estimated_price_cents)}</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          valor estimado
+          {formatDistance(ride.distance_m)} · {formatDuration(ride.duration_s)}
         </ThemedText>
       </View>
       <RouteSummary origin={ride.origin_address} destination={ride.destination_address} />
-      <TripNumbers
-        distanceM={ride.distance_m}
-        durationS={ride.duration_s}
-        priceCents={ride.estimated_price_cents}
-      />
-      <Button label="Aceitar corrida" variant="brand" busy={busy} disabled={blocked} onPress={onAccept} />
+      <View style={styles.requestActions}>
+        <View style={styles.decline}>
+          <Button label="Recusar" variant="secondary" disabled={blocked || busy} onPress={onDecline} />
+        </View>
+        <View style={styles.accept}>
+          <Button label="Aceitar corrida" variant="brand" busy={busy} disabled={blocked} onPress={onAccept} />
+        </View>
+      </View>
     </View>
   );
 }
@@ -227,6 +233,9 @@ export function DriverHome({ profile }: { profile: Profile }) {
   const requests = useLive(listening ? fetchOpenRequests : null, 5000);
   const openRides = listening ? (requests.data ?? []) : [];
 
+  useRideAlerts(rideLive.data, 'motorista');
+  useNewRequestAlert(listening ? requests.data : undefined);
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [vehicleOpen, setVehicleOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -251,6 +260,18 @@ export function DriverHome({ profile }: { profile: Profile }) {
     }
     await refreshAll();
     setBusy(false);
+  }
+
+  async function decline(ride: Ride) {
+    setError(null);
+    setAcceptingId(ride.id);
+    try {
+      await declineRide(ride.id);
+    } catch (e) {
+      setError(describeError(e));
+    }
+    await requests.refresh();
+    setAcceptingId(null);
   }
 
   async function accept(ride: Ride) {
@@ -375,8 +396,9 @@ export function DriverHome({ profile }: { profile: Profile }) {
               key={ride.id}
               ride={ride}
               busy={acceptingId === ride.id}
-              blocked={acceptingId !== null}
+              blocked={acceptingId !== null && acceptingId !== ride.id}
               onAccept={() => accept(ride)}
+              onDecline={() => decline(ride)}
             />
           ))
         )}
@@ -431,6 +453,9 @@ const styles = StyleSheet.create({
   notice: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
   noticeText: { flex: 1, gap: Spacing.one },
   request: { borderWidth: 1, borderRadius: Radius.large, padding: Spacing.three, gap: Spacing.three },
-  requestHeader: { flexDirection: 'row', alignItems: 'baseline', gap: Spacing.two },
+  requestHeader: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
+  requestActions: { flexDirection: 'row', gap: Spacing.two },
+  decline: { flex: 1 },
+  accept: { flex: 2 },
   modalBody: { gap: Spacing.three, paddingBottom: Spacing.two },
 });

@@ -1,5 +1,5 @@
-import { useCallback, useState } from 'react';
-import { Alert, Pressable, StyleSheet, View } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { Alert, Linking, Pressable, StyleSheet, View } from 'react-native';
 
 import { AccountMenu } from '@/components/account-menu';
 import { Button, ErrorText } from '@/components/form';
@@ -7,17 +7,18 @@ import { MapScreen } from '@/components/map-screen';
 import { Loading, PersonRow, TripNumbers } from '@/components/ride';
 import { ThemedText } from '@/components/themed-text';
 import { Divider, FloatingButton, Icon, RouteSummary, Row, SearchingBar, StepBar } from '@/components/ui';
-import { Brand, Radius, Spacing } from '@/constants/theme';
+import { Brand, Elevation, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { describeError } from '@/lib/errors';
 import { firstName, formatDistance, formatDuration, formatPrice } from '@/lib/format';
 import { useMyLocation } from '@/lib/location';
+import { useRideAlerts } from '@/lib/notifications';
 import { endedRecently, isActive, statusLabel } from '@/lib/ride-labels';
 import { cancelRide, fetchLatestRide, fetchRecentDestinations, requestRide } from '@/lib/rides';
-import type { Profile, Quote, RideView } from '@/lib/types';
+import type { PlaceRef, Profile, QuoteOption, RideView } from '@/lib/types';
 import { useLive } from '@/lib/use-live';
 import { ridePoints, useRouteLine } from '@/lib/use-route-line';
-import { PassengerSearch } from '@/screens/passenger-search';
+import { PassengerSearch, type SearchResult } from '@/screens/passenger-search';
 import { RideSummary } from '@/screens/ride-summary';
 
 const HINT: Record<string, string> = {
@@ -29,8 +30,25 @@ const HINT: Record<string, string> = {
 
 const STEP: Record<string, number> = { accepted: 1, arrived: 2, in_progress: 3 };
 
+/** Minutos desde `iso`, atualizados sozinhos. */
+function useMinutesSince(iso: string) {
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 15000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return Math.max(0, Math.floor((now - new Date(iso).getTime()) / 60000));
+}
+
+/** A partir daqui a busca é considerada demorada e o app diz isso com clareza. */
+const SLOW_SEARCH_MINUTES = 3;
+
 function ActiveRide({ view, onChanged }: { view: RideView; onChanged: () => Promise<void> }) {
   const { ride, counterpart } = view;
+  const waited = useMinutesSince(ride.requested_at);
+  const slow = ride.status === 'requested' && waited >= SLOW_SEARCH_MINUTES;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const searching = ride.status === 'requested';
@@ -57,9 +75,13 @@ function ActiveRide({ view, onChanged }: { view: RideView; onChanged: () => Prom
   return (
     <>
       <View style={styles.titleBlock}>
-        <ThemedText type="heading">{statusLabel(ride.status, 'passageiro')}</ThemedText>
+        <ThemedText type="heading">
+          {slow ? 'Ainda sem motorista' : statusLabel(ride.status, 'passageiro')}
+        </ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          {HINT[ride.status]}
+          {slow
+            ? `Nenhum motorista aceitou em ${waited} min. Você pode continuar aguardando ou cancelar e tentar de novo.`
+            : HINT[ride.status]}
         </ThemedText>
       </View>
 
@@ -89,23 +111,26 @@ function ActiveRide({ view, onChanged }: { view: RideView; onChanged: () => Prom
 }
 
 function QuoteSheet({
-  quote,
+  quotes,
   onRequested,
   onExpired,
 }: {
-  quote: Quote;
+  quotes: QuoteOption[];
   onRequested: () => Promise<void>;
   onExpired: () => void;
 }) {
   const theme = useTheme();
+  const [selectedId, setSelectedId] = useState(quotes[0]?.id);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const selected = quotes.find((quote) => quote.id === selectedId) ?? quotes[0];
 
   async function confirm() {
+    if (!selected) return;
     setError(null);
     setBusy(true);
     try {
-      await requestRide(quote.id);
+      await requestRide(selected.id);
       await onRequested();
     } catch (e) {
       const code = (e as { message?: string }).message;
@@ -117,34 +142,100 @@ function QuoteSheet({
     }
   }
 
+  if (!selected) {
+    return <ErrorText>Nenhuma categoria de viagem disponível no momento.</ErrorText>;
+  }
+
   return (
     <>
-      <ThemedText type="heading">Escolha sua corrida</ThemedText>
-
-      <View style={[styles.option, { borderColor: theme.text, backgroundColor: theme.backgroundElement }]}>
-        <View style={styles.optionIcon}>
-          <Icon name="car-sport" size={26} color={Brand.green} />
-        </View>
-        <View style={styles.optionText}>
-          <ThemedText type="bold">RUMO</ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            {formatDuration(quote.duration_s)} de viagem · {formatDistance(quote.distance_m)}
-          </ThemedText>
-        </View>
-        <ThemedText type="heading">{formatPrice(quote.price_cents)}</ThemedText>
+      <View style={styles.titleBlock}>
+        <ThemedText type="heading">Escolha uma viagem</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          {formatDistance(selected.distance_m)} · cerca de {formatDuration(selected.duration_s)} de viagem
+        </ThemedText>
       </View>
 
-      <RouteSummary origin={quote.origin_address} destination={quote.destination_address} />
+      <View accessibilityRole="radiogroup" style={styles.options}>
+        {quotes.map((quote) => {
+          const isSelected = quote.id === selected.id;
+          return (
+            <Pressable
+              key={quote.id}
+              accessibilityRole="radio"
+              accessibilityState={{ selected: isSelected }}
+              accessibilityLabel={`${quote.category.name}, ${formatPrice(quote.price_cents)}`}
+              disabled={busy}
+              onPress={() => setSelectedId(quote.id)}
+              style={[
+                styles.option,
+                {
+                  borderColor: isSelected ? theme.text : 'transparent',
+                  backgroundColor: isSelected ? theme.backgroundElement : 'transparent',
+                },
+              ]}>
+              <View style={styles.optionIcon}>
+                <Icon name="car-sport" size={26} color={Brand.green} />
+              </View>
+              <View style={styles.optionText}>
+                <View style={styles.optionName}>
+                  <ThemedText type="bold">{quote.category.name}</ThemedText>
+                  <Icon name="person" size={12} color={theme.textSecondary} />
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {quote.category.seats}
+                  </ThemedText>
+                </View>
+                {quote.category.description ? (
+                  <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
+                    {quote.category.description}
+                  </ThemedText>
+                ) : null}
+              </View>
+              <ThemedText type="heading">{formatPrice(quote.price_cents)}</ThemedText>
+            </Pressable>
+          );
+        })}
+      </View>
 
       <ThemedText type="small" themeColor="textSecondary">
-        Confira se os endereços são os que você quis dizer. Preço fechado, válido por 10 minutos.
+        Preço calculado pela rota e válido por 10 minutos. O pagamento é combinado direto com o
+        motorista.
       </ThemedText>
 
       <ErrorText>{error}</ErrorText>
-      <Button label="Confirmar RUMO" onPress={confirm} busy={busy} />
+      <Button label={`Confirmar ${selected.category.name}`} onPress={confirm} busy={busy} />
     </>
   );
 }
+
+/** Origem e destino resumidos sobre o mapa; tocar volta para editar os endereços. */
+function RoutePill({ origin, destination, onPress }: { origin: string; destination: string; onPress: () => void }) {
+  const theme = useTheme();
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel="Editar endereços"
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.routePill,
+        Elevation,
+        { backgroundColor: theme.background },
+        pressed && styles.pressed,
+      ]}>
+      <View style={styles.routePillText}>
+        <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
+          {origin}
+        </ThemedText>
+        <ThemedText type="smallBold" numberOfLines={1}>
+          {destination}
+        </ThemedText>
+      </View>
+      <Icon name="pencil" size={16} color={theme.textSecondary} />
+    </Pressable>
+  );
+}
+
+const shortLabel = (label: string) => label.split(' - ')[0] ?? label;
 
 export function PassengerHome({ profile }: { profile: Profile }) {
   const theme = useTheme();
@@ -155,41 +246,58 @@ export function PassengerHome({ profile }: { profile: Profile }) {
   const live = useLive(rideFetcher);
   const recents = useLive(recentsFetcher, 60000);
   const location = useMyLocation();
+  useRideAlerts(live.data, 'passageiro');
 
-  const [searching, setSearching] = useState<{ destination: string } | null>(null);
-  const [quote, setQuote] = useState<Quote | null>(null);
+  /** Tela de busca aberta, com os pontos já escolhidos (ao editar). */
+  const [searching, setSearching] = useState<{ origin: PlaceRef | null; destination: PlaceRef | null } | null>(
+    null,
+  );
+  /** Viagem planejada e cotada, ainda não pedida. */
+  const [plan, setPlan] = useState<SearchResult | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [focusToken, setFocusToken] = useState(0);
   // Resumo já visto: guardado só em memória, para não reaparecer nesta sessão.
   const [dismissedId, setDismissedId] = useState<string | null>(null);
 
   const view = live.data ?? null;
   const active = view && isActive(view.ride) ? view : null;
   const summary = view && !active && endedRecently(view.ride) && view.ride.id !== dismissedId ? view : null;
-  const shownQuote = active || summary ? null : quote;
+  const shownPlan = active || summary ? null : plan;
+  const firstQuote = shownPlan?.quotes[0] ?? null;
 
-  const points = ridePoints(active?.ride ?? summary?.ride ?? shownQuote ?? null);
+  const points = ridePoints(active?.ride ?? summary?.ride ?? firstQuote ?? null);
   const line = useRouteLine(points.origin, points.destination);
+  const recentPlaces = recents.data ?? [];
 
   if (searching && !active) {
     return (
       <PassengerSearch
         me={location.coords}
-        recents={recents.data ?? []}
-        initialDestination={searching.destination}
+        recents={recentPlaces}
+        initial={searching}
         onBack={() => setSearching(null)}
-        onQuote={(next) => {
-          setQuote(next);
+        onResult={(result) => {
+          setPlan(result);
           setSearching(null);
         }}
       />
     );
   }
 
-  const top = shownQuote ? (
-    <FloatingButton icon="arrow-back" label="Voltar" onPress={() => setQuote(null)} />
+  const top = shownPlan ? (
+    <>
+      <FloatingButton icon="arrow-back" label="Voltar" onPress={() => setPlan(null)} />
+      <RoutePill
+        origin={firstQuote?.origin_address ?? ''}
+        destination={firstQuote?.destination_address ?? ''}
+        onPress={() => setSearching({ origin: shownPlan.origin, destination: shownPlan.destination })}
+      />
+    </>
   ) : (
     <FloatingButton icon="person" label="Abrir menu da conta" onPress={() => setMenuOpen(true)} />
   );
+
+  const idle = !live.loading && !active && !summary && !shownPlan;
 
   return (
     <>
@@ -199,7 +307,17 @@ export function PassengerHome({ profile }: { profile: Profile }) {
         line={line}
         me={location.coords}
         showsUser={location.status === 'granted'}
-        top={top}>
+        focusToken={focusToken}
+        top={top}
+        floating={
+          location.coords && idle ? (
+            <FloatingButton
+              icon="locate"
+              label="Centralizar na minha localização"
+              onPress={() => setFocusToken((value) => value + 1)}
+            />
+          ) : null
+        }>
         {live.loading ? (
           <Loading label="Carregando suas corridas" />
         ) : active ? (
@@ -215,49 +333,60 @@ export function PassengerHome({ profile }: { profile: Profile }) {
             doneLabel="Concluir"
             onDone={() => {
               setDismissedId(summary.ride.id);
-              setQuote(null);
+              setPlan(null);
             }}
           />
-        ) : shownQuote ? (
+        ) : shownPlan ? (
           <QuoteSheet
-            quote={shownQuote}
+            key={shownPlan.quotes[0]?.id}
+            quotes={shownPlan.quotes}
             onRequested={async () => {
               await live.refresh();
               recents.refresh();
             }}
-            onExpired={() => setQuote(null)}
+            onExpired={() => setPlan(null)}
           />
         ) : (
           <>
-            <ThemedText type="heading">Para onde vamos, {firstName(profile.full_name)}?</ThemedText>
             <ErrorText>{live.error}</ErrorText>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Informar destino"
-              onPress={() => setSearching({ destination: '' })}
+              onPress={() => setSearching({ origin: null, destination: null })}
               style={({ pressed }) => [
                 styles.search,
                 { backgroundColor: theme.backgroundElement },
                 pressed && styles.pressed,
               ]}>
               <Icon name="search" size={22} />
-              <ThemedText type="bold">Para onde?</ThemedText>
+              <ThemedText type="heading">Para onde?</ThemedText>
             </Pressable>
 
-            {(recents.data ?? []).map((address) => (
-              <Row
-                key={address}
-                icon="time-outline"
-                title={address.split(' - ')[0] ?? address}
-                subtitle={address}
-                onPress={() => setSearching({ destination: address })}
-              />
-            ))}
-
-            {location.status === 'denied' ? (
+            {recentPlaces.length > 0 ? (
+              <View>
+                {recentPlaces.map((place) => (
+                  <Row
+                    key={place.label}
+                    icon="time-outline"
+                    title={shortLabel(place.label)}
+                    subtitle={place.label}
+                    onPress={() => setSearching({ origin: null, destination: place })}
+                  />
+                ))}
+              </View>
+            ) : (
               <ThemedText type="small" themeColor="textSecondary">
-                Localização desativada. Você pode digitar o endereço de embarque ao pedir a corrida.
+                Olá, {firstName(profile.full_name)}. Seus destinos recentes vão aparecer aqui.
               </ThemedText>
+            )}
+
+            {location.status === 'denied' || location.status === 'unavailable' ? (
+              <Row
+                icon="navigate-outline"
+                title="Localização desativada"
+                subtitle="Ative para embarcar onde você está. Sem ela, escolha o endereço de embarque na busca."
+                onPress={() => Linking.openSettings()}
+              />
             ) : null}
           </>
         )}
@@ -276,8 +405,9 @@ const styles = StyleSheet.create({
     gap: Spacing.three,
     borderRadius: Radius.pill,
     paddingHorizontal: Spacing.four,
-    minHeight: 60,
+    minHeight: 64,
   },
+  options: { gap: Spacing.one },
   option: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -295,4 +425,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   optionText: { flex: 1, gap: Spacing.half },
+  optionName: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  routePill: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    borderRadius: Radius.large,
+    paddingHorizontal: Spacing.three,
+    minHeight: 48,
+    paddingVertical: 6,
+  },
+  routePillText: { flex: 1 },
 });

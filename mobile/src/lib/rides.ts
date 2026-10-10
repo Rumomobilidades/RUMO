@@ -3,7 +3,9 @@ import type {
   Counterpart,
   Driver,
   LatLng,
-  Quote,
+  PlaceRef,
+  PlaceSuggestion,
+  QuoteOption,
   Ride,
   RideStatus,
   RideView,
@@ -11,7 +13,7 @@ import type {
 } from '@/lib/types';
 
 const RIDE_COLUMNS =
-  'id, passenger_id, driver_id, origin_address, origin_lat, origin_lng, destination_address, destination_lat, destination_lng, distance_m, duration_s, estimated_price_cents, status, requested_at, accepted_at, arrived_at, started_at, completed_at, cancelled_at, cancelled_by, cancel_reason';
+  'id, passenger_id, driver_id, category_id, origin_address, origin_lat, origin_lng, destination_address, destination_lat, destination_lng, distance_m, duration_s, estimated_price_cents, status, requested_at, accepted_at, arrived_at, started_at, completed_at, cancelled_at, cancelled_by, cancel_reason';
 
 const DRIVER_COLUMNS = 'id, approval_status, is_online, vehicle_model, vehicle_plate';
 
@@ -90,23 +92,38 @@ export async function fetchDriver(userId: string): Promise<Driver | null> {
   ) as Driver | null;
 }
 
-/** Pede ao servidor a estimativa (rota real + tarifa). O app não calcula preço. */
-export async function estimateRide(
-  origin: string | { lat: number; lng: number },
-  destination: string,
-): Promise<Quote> {
-  const { data, error } = await supabase.functions.invoke('estimate-ride', {
-    body: { origin, destination },
-  });
+/** Em erro HTTP de Edge Function, o corpo com o código vem em error.context (um Response). */
+async function invoke<T>(name: string, body: unknown): Promise<T> {
+  const { data, error } = await supabase.functions.invoke(name, { body: body as Record<string, unknown> });
 
   if (error) {
-    // Em erro HTTP, o corpo com o código vem em error.context (um Response).
     const context = (error as { context?: { json?: () => Promise<{ error?: string }> } }).context;
-    const body = await context?.json?.().catch(() => null);
-    throw { message: body?.error ?? error.message };
+    const payload = await context?.json?.().catch(() => null);
+    throw { message: payload?.error ?? error.message };
   }
 
-  return (data as { quote: Quote }).quote;
+  return data as T;
+}
+
+/** Ponto de origem ou destino: lugar escolhido, posição do aparelho ou endereço digitado. */
+export type PlaceInput = PlaceRef | { lat: number; lng: number } | string;
+
+/**
+ * Pede ao servidor as cotações (rota real + tarifa), uma por categoria ativa.
+ * O app não calcula preço nem define categorias.
+ */
+export async function estimateRide(origin: PlaceInput, destination: PlaceInput): Promise<QuoteOption[]> {
+  const data = await invoke<{ quotes: QuoteOption[] }>('estimate-ride', { origin, destination });
+  return data.quotes;
+}
+
+/** Sugestões de endereço para o texto digitado, priorizando o entorno de `near`. */
+export async function searchPlaces(query: string, near: LatLng | null): Promise<PlaceSuggestion[]> {
+  const data = await invoke<{ places: PlaceSuggestion[] }>('search-places', {
+    query,
+    near: near ? { lat: near.latitude, lng: near.longitude } : undefined,
+  });
+  return data.places;
 }
 
 export async function requestRide(quoteId: string): Promise<Ride> {
@@ -115,6 +132,11 @@ export async function requestRide(quoteId: string): Promise<Ride> {
 
 export async function acceptRide(rideId: string): Promise<Ride> {
   return unwrap(await supabase.rpc('accept_ride', { p_ride_id: rideId })) as Ride;
+}
+
+/** O motorista dispensa a solicitação: ela some só para ele. */
+export async function declineRide(rideId: string): Promise<void> {
+  unwrap(await supabase.rpc('decline_ride', { p_ride_id: rideId }));
 }
 
 export async function advanceRide(
@@ -170,16 +192,24 @@ export async function fetchRouteLine(from: LatLng, to: LatLng): Promise<LatLng[]
 }
 
 /** Destinos das últimas corridas concluídas, sem repetição — atalhos da tela inicial. */
-export async function fetchRecentDestinations(userId: string): Promise<string[]> {
+export async function fetchRecentDestinations(userId: string): Promise<PlaceRef[]> {
   const rows = unwrap(
     await supabase
       .from('rides')
-      .select('destination_address')
+      .select('destination_address, destination_lat, destination_lng')
       .eq('passenger_id', userId)
       .eq('status', 'completed')
       .order('requested_at', { ascending: false })
       .limit(15),
-  ) as { destination_address: string }[];
+  ) as { destination_address: string; destination_lat: number; destination_lng: number }[];
 
-  return [...new Set(rows.map((row) => row.destination_address))].slice(0, 3);
+  const seen = new Set<string>();
+  const places: PlaceRef[] = [];
+  for (const row of rows) {
+    if (seen.has(row.destination_address)) continue;
+    seen.add(row.destination_address);
+    places.push({ label: row.destination_address, lat: row.destination_lat, lng: row.destination_lng });
+    if (places.length === 3) break;
+  }
+  return places;
 }

@@ -127,7 +127,14 @@ try {
   ok('fetchHistory vazio', (await app.fetchHistory(ana.id, 'passageiro')).length === 0);
   ok('estimateRide: endereço inexistente', (await code(app.estimateRide('zzqx inexistente 99999 qwxz', 'Rua Bahia, Blumenau'))) === 'origin_not_found');
   await sleep(1200);
-  const quote = await app.estimateRide('Rua XV de Novembro, Blumenau SC', 'Rua Bahia, 2000, Blumenau SC');
+  const places = await app.searchPlaces('Rua Bahia Blumenau', { latitude: -26.9187, longitude: -49.0661 });
+  ok('searchPlaces devolve sugestões com coordenadas', places.length > 0 && typeof places[0].lat === 'number' && places[0].title.length > 2, `${places.length}: ${places[0]?.title} | ${places[0]?.subtitle}`);
+  ok('searchPlaces recusa texto curto', (await code(app.searchPlaces('ab', null))) === 'query_too_short');
+  await sleep(1200);
+  const picked = { label: `${places[0].title} - ${places[0].subtitle}`, lat: places[0].lat, lng: places[0].lng };
+  const options = await app.estimateRide('Rua XV de Novembro, Blumenau SC', picked);
+  ok('estimateRide devolve uma cotação por categoria', options.length >= 1 && options[0].category?.name === 'RUMO' && options[0].destination_address === picked.label, options.map((o) => o.category?.name).join(','));
+  const quote = options[0];
   ok('estimateRide devolve cotação real', quote.distance_m > 500 && quote.price_cents >= 800, `${quote.distance_m} m, ${quote.price_cents} centavos`);
   ok('cotação traz coordenadas para o mapa', Math.abs(quote.origin_lat) > 1 && Math.abs(quote.destination_lng) > 1);
   const line = await app.fetchRouteLine(
@@ -136,7 +143,7 @@ try {
   );
   ok('fetchRouteLine devolve o traçado', line.length > 5, `${line.length} pontos`);
   await sleep(1200);
-  const gps = await app.estimateRide({ lat: -26.9187, lng: -49.0661 }, 'Rua Bahia, 2000, Blumenau SC');
+  const [gps] = await app.estimateRide({ lat: -26.9187, lng: -49.0661 }, 'Rua Bahia, 2000, Blumenau SC');
   ok('estimateRide com origem pelo GPS', gps.origin_lat === -26.9187 && gps.origin_address.length > 3 && gps.distance_m > 300, gps.origin_address);
   ok('fetchRecentDestinations vazio antes da 1ª corrida', (await app.fetchRecentDestinations(ana.id)).length === 0);
   let ride = await app.requestRide(quote.id);
@@ -186,13 +193,13 @@ try {
   ana.as();
   ok('histórico do passageiro', (await app.fetchHistory(ana.id, 'passageiro')).some((r) => r.id === ride.id));
   view = await app.fetchLatestRide(ana.id, 'passageiro');
-  ok('fetchRecentDestinations depois da corrida', (await app.fetchRecentDestinations(ana.id))[0] === ride.destination_address);
+  ok('fetchRecentDestinations depois da corrida', (await app.fetchRecentDestinations(ana.id))[0]?.label === ride.destination_address);
   ok('corrida traz coordenadas', typeof view?.ride.origin_lat === 'number');
   ok('passageiro vê a conclusão com dados do motorista', view?.ride.status === 'completed' && view.counterpart?.full_name === 'Dados caio');
 
   // --- cancelamento pelo passageiro depois do aceite
   await sleep(1200);
-  const quote2 = await app.estimateRide('Rua Bahia, Blumenau SC', 'Rua XV de Novembro, Blumenau SC');
+  const [quote2] = await app.estimateRide('Rua Bahia, Blumenau SC', 'Rua XV de Novembro, Blumenau SC');
   let ride2 = await app.requestRide(quote2.id);
   davi.as();
   await app.acceptRide(ride2.id);

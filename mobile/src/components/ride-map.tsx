@@ -20,6 +20,8 @@ type Props = {
   /** Altura coberta pelo painel inferior. */
   bottomInset?: number;
   topInset?: number;
+  /** Quando muda, o mapa volta para a posição do aparelho. */
+  focusToken?: number;
 };
 
 export function RideMap({
@@ -30,6 +32,7 @@ export function RideMap({
   showsUser = false,
   bottomInset = 0,
   topInset = 0,
+  focusToken = 0,
 }: Props) {
   const map = useRef<MapView>(null);
   const scheme = useColorScheme();
@@ -57,6 +60,14 @@ export function RideMap({
     // As chaves em texto evitam reenquadrar a cada render com objetos novos.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [originKey, destinationKey, meKey, lineLength, bottomInset, topInset]);
+
+  useEffect(() => {
+    if (focusToken > 0 && me) {
+      map.current?.animateToRegion({ ...me, latitudeDelta: 0.012, longitudeDelta: 0.012 }, 400);
+    }
+    // Só o toque no botão dispara; a posição em si não deve reenquadrar o mapa.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusToken]);
 
   return (
     <MapView

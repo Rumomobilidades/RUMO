@@ -45,3 +45,6 @@ example
 # env local do app (chaves públicas, mas específicas de cada ambiente)
 .env
 !.env.example
+
+# prints gerados por npm run test:ui
+.ui-shots/
